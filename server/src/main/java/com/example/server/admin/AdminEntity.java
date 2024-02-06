@@ -1,17 +1,22 @@
 package com.example.server.admin;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import lombok.Data;
+import lombok.NonNull;
 
 @Entity
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class AdminEntity {
+public class AdminEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "name")
+    @NonNull
     private String name;
+
+    @NonNull
+    private String email;
 }
