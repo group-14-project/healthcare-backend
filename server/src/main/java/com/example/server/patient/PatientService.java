@@ -21,6 +21,10 @@ public class PatientService {
         }
     }
 
+    public static class EmailNotVerifiedException extends SecurityException{
+        public EmailNotVerifiedException(){ super("email not verified"); }
+    }
+
     public static class InvalidPasswordException extends SecurityException{
         public InvalidPasswordException(){
             super("Incorrect Password");
@@ -32,21 +36,26 @@ public class PatientService {
         return new BCryptPasswordEncoder();
     }
 
-
     public PatientService(PatientRepository patientRepo, BCryptPasswordEncoder bCryptPasswordEncoder){
         this.patientRepo = patientRepo;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
+    //This is to register a new patient
     public PatientEntity registerNewPatient(String name, String email, String password){
         PatientEntity patient = patientRepo.findPatientEntitiesByEmail(email);
+        if( patient!=null && !patient.isEmailVerify()){
+            throw new EmailNotVerifiedException();
+        }
+
         if(patient != null){
             throw new PatientConflictException();
         }
+
         PatientEntity newPatient = new PatientEntity();
-        newPatient.setName(name);
+        newPatient.setFirstName(name);
         newPatient.setEmail(email);
-        newPatient.setPassword(bCryptPasswordEncoder.encode(password));
+        newPatient.setPassword(bCryptPasswordEncoder.encode(password));;
 
         return patientRepo.save(newPatient);
     }

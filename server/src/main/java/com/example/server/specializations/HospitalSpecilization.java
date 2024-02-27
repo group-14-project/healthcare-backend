@@ -1,22 +1,20 @@
-package com.example.server.receptionist;
+package com.example.server.specializations;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NonNull;
+import lombok.NoArgsConstructor;
 
 @Data
 @Entity
-public class ReceptionistEntity{
+@NoArgsConstructor
+@AllArgsConstructor
+public class HospitalSpecilization {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NonNull
-    private String name;
-
-    @NonNull
-    private String email;
 }

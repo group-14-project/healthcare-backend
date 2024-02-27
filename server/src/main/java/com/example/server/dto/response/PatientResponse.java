@@ -30,7 +30,7 @@ public class PatientResponse {
                 new Patient(
                         patientEntity.getEmail(),
                         token,
-                        patientEntity.getName()
+                        patientEntity.getFirstName()
                 )
         );
     }

@@ -4,6 +4,7 @@ import com.example.server.converter.PatientObjectConverter;
 import com.example.server.dto.request.LoginUserRequest;
 import com.example.server.dto.request.SignupPatientRequest;
 import com.example.server.dto.response.PatientResponse;
+import com.example.server.emailOtp.EmailSender;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,11 +16,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/patient")
 public class PatientController {
     private final PatientService patient;
+
+    private final EmailSender emailSender;
     private final PatientObjectConverter converter;
 
-    public PatientController(PatientService patient, PatientObjectConverter converter){
+    public PatientController(PatientService patient, PatientObjectConverter converter, EmailSender emailSender){
         this.patient = patient;
         this.converter = converter;
+        this.emailSender = emailSender;
     }
 
     public static class UnexpectedError extends SecurityException{
@@ -45,5 +49,14 @@ public class PatientController {
                 body.getUser().getPassword()
         );
         return ResponseEntity.ok(converter.entityToResponse(currentPatient));
+    }
+
+    @PostMapping("/email")
+    ResponseEntity<Void> sendEmail(@RequestBody SignupPatientRequest body){
+        emailSender.sendOtpEmail(
+                body.getPatient().getEmail(),
+                body.getPatient().getName()
+        );
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 }

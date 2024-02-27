@@ -9,6 +9,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Data
 @NoArgsConstructor
@@ -19,12 +21,38 @@ public class PatientEntity{
     private Integer id;
 
     @NonNull
-    private String name;
+    private String firstName;
+
+    @NonNull
+    private String lastName;
 
     @NonNull
     private String email;
 
     @NonNull
     private String password;
+
+    private Integer phoneNumber;
+
+    private Integer height;
+
+    private Integer weight;
+
+    private String bloodGroup;
+
+    private String gender;
+
+    private String address;
+
+    private String city;
+
+    private String pinCode;
+
+    private boolean emailVerify;
+
+    private String otp;
+
+    private LocalDateTime otpGeneratedTime;
+
 
 }
