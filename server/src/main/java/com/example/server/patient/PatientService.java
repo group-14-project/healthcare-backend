@@ -55,7 +55,7 @@ public class PatientService {
         PatientEntity newPatient = new PatientEntity();
         newPatient.setFirstName(name);
         newPatient.setEmail(email);
-        newPatient.setPassword(bCryptPasswordEncoder.encode(password));;
+        newPatient.setPassword(bCryptPasswordEncoder.encode(password));
 
         return patientRepo.save(newPatient);
     }

@@ -1,13 +1,13 @@
 package com.example.server.doctor;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.example.server.hospitalSpecialization.HospitalSpecializationEntity;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -19,8 +19,33 @@ public class DoctorEntity {
     private Integer id;
 
     @NonNull
-    private String name;
+    private String firstName;
+
+    @NonNull
+    private String lastName;
 
     @NonNull
     private String email;
+
+    private String password;
+
+    private String registrationId;
+
+    private String degree;
+
+    private Long phoneNumber;
+
+    private Integer activeStatus;
+
+    private String otp;
+
+    private LocalDateTime otpGeneratedTime;
+
+    @ManyToOne
+    @JoinColumn(name = "hospital_specialization_id")
+    private HospitalSpecializationEntity hospitalSpecialization;
+
+    @OneToOne(mappedBy = "headDoctor")
+    private HospitalSpecializationEntity hospitalSpecializationhead;
+
 }

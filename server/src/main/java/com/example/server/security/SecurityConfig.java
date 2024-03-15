@@ -23,8 +23,8 @@ public class SecurityConfig{
         http.sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         http.authorizeHttpRequests((authorize)->
-                authorize.requestMatchers(HttpMethod.GET, "/arogyashala", "*/opdtimings", "*/profile", "/hospitals").permitAll()
-                        .requestMatchers(HttpMethod.POST, "*/login", "*/signup", "*/email").permitAll()
+                authorize.requestMatchers(HttpMethod.GET, "/arogyashala", "*/opdtimings", "*/profile", "/hospitals", "*/showdoc/1").permitAll()
+                        .requestMatchers(HttpMethod.POST, "*/login", "*/signup", "*/email", "*/add", "*/specialization").permitAll()
                         .anyRequest().authenticated());
 
         return http.build();

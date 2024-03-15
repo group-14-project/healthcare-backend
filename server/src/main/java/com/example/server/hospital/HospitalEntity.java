@@ -1,41 +1,30 @@
-package com.example.server.patient;
+package com.example.server.hospital;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.example.server.hospitalSpecialization.HospitalSpecializationEntity;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PatientEntity{
+@Table(name = "hospital")
+public class HospitalEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String firstName;
-
-    private String lastName;
+    private String hospitalName;
 
     private String email;
 
     private String password;
-
-    private Long phoneNumber;
-
-    private Float height;
-
-    private Float weight;
-
-    private String bloodGroup;
-
-    private String gender;
 
     private String address;
 
@@ -43,9 +32,11 @@ public class PatientEntity{
 
     private String pinCode;
 
-    private boolean emailVerify;
-
     private String otp;
 
     private LocalDateTime otpGeneratedTime;
+
+    @OneToMany(mappedBy = "hospital")
+    private List<HospitalSpecializationEntity> hospitalSpecializationEntities = new ArrayList<>();
+
 }

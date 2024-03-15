@@ -1,0 +1,38 @@
+package com.example.server.hospitalSpecialization;
+
+import com.example.server.doctor.DoctorEntity;
+import com.example.server.doctor.DoctorService;
+import com.example.server.hospital.HospitalEntity;
+import com.example.server.hospital.HospitalService;
+import com.example.server.specialization.SpecializationEntity;
+import com.example.server.specialization.SpecializationService;
+import org.springframework.stereotype.Service;
+
+@Service
+public class HospitalSpecializationService {
+    private final HospitalSpecializationRepository hospitalSpecializationRepository;
+
+    private final SpecializationService specializationService;
+    private final HospitalService hospitalService;
+    private final DoctorService doctorService;
+
+    public HospitalSpecializationService(HospitalSpecializationRepository hospitalSpecializationRepository, SpecializationService specializationService, SpecializationService specializationService1, HospitalService hospitalService, DoctorService doctorService) {
+        this.hospitalSpecializationRepository = hospitalSpecializationRepository;
+        this.specializationService = specializationService;
+        this.hospitalService = hospitalService;
+        this.doctorService = doctorService;
+    }
+
+    public HospitalSpecializationEntity registerNewSpecialization(String name, Integer hospitalId, String email){
+        SpecializationEntity specializationEntity = specializationService.getSpecializationId(name);
+        HospitalEntity hospitalEntity = hospitalService.findHospitalById(hospitalId);
+        DoctorEntity doctorEntity = doctorService.findDoctorByEmail(email);
+
+        HospitalSpecializationEntity newSpecialization = new HospitalSpecializationEntity();
+        newSpecialization.setSpecialization(specializationEntity);
+        newSpecialization.setHospital(hospitalEntity);
+        newSpecialization.setHeadDoctor(doctorEntity);
+
+        return hospitalSpecializationRepository.save(newSpecialization);
+    }
+}
