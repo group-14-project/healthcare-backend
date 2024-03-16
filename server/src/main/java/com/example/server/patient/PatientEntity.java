@@ -1,14 +1,15 @@
 package com.example.server.patient;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.example.server.connection.ConnectionEntity;
+import com.example.server.report.ReportEntity;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.swing.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Data
@@ -48,4 +49,8 @@ public class PatientEntity{
     private String otp;
 
     private LocalDateTime otpGeneratedTime;
+    @OneToMany(mappedBy = "patient")
+    private List<ConnectionEntity> connection;
+    @OneToMany(mappedBy = "pat")
+    private List<ReportEntity> report;
 }
