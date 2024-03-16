@@ -1,5 +1,7 @@
 package com.example.server.doctor;
 
+import com.example.server.connection.ConnectionEntity;
+import com.example.server.consent.ConsentEntity;
 import com.example.server.hospitalSpecialization.HospitalSpecializationEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -8,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Entity
@@ -47,5 +50,8 @@ public class DoctorEntity {
 
     @OneToOne(mappedBy = "headDoctor")
     private HospitalSpecializationEntity hospitalSpecializationhead;
-
+    @OneToMany(mappedBy = "doctor")
+    private List<ConnectionEntity> connection;
+    @OneToMany(mappedBy = "doct")
+    private List<ConsentEntity> consent;
 }
