@@ -46,4 +46,34 @@ public class EmailSender {
         return otp;
     }
 
+    //this is for sending the email to the hospital with password
+    public void sendMailWithPassword(String email,String name,String password)
+    {
+        try
+        {
+            MimeMessage mimeMailMessage = javaMailSender.createMimeMessage();
+            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMailMessage, true, "UTF8");
+
+            mimeMessageHelper.setTo(email);
+            mimeMessageHelper.setSubject("Arogyashala:");
+
+            String htmlContent = String.format("""
+                Hi %s,
+                Your Password for the AROGYASHALA account is:
+                %s
+                Please verify your email and change your password
+                Regards,
+                Team Arogyashala
+                """, name,password);
+            mimeMessageHelper.setText(htmlContent);
+            javaMailSender.send(mimeMailMessage);
+        } catch (MessagingException e) {
+            // Notify the user about the error
+            String errorMessage = "An error occurred while sending the email. Please try again later.";
+            // You can use your application's error handling mechanism to notify the user, such as showing a message on the UI or sending a notification
+            // Alternatively, you can rethrow the exception to propagate it further
+            throw new RuntimeException(errorMessage, e);
+        }
+    }
+
 }

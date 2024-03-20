@@ -20,12 +20,12 @@ public class SecurityConfig{
         //TODO: we have to include cors and csrf in the production env
         http.csrf(AbstractHttpConfigurer::disable);
 
-        http.sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-
-        http.authorizeHttpRequests((authorize)->
-                authorize.requestMatchers(HttpMethod.GET, "/arogyashala", "*/opdtimings", "*/profile", "/hospitals", "*/showdoc/1").permitAll()
-                        .requestMatchers(HttpMethod.POST, "*/login", "*/signup", "*/email", "*/add", "*/specialization").permitAll()
-                        .anyRequest().authenticated());
+//        http.sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+//
+//        http.authorizeHttpRequests((authorize)->
+//                authorize.requestMatchers(HttpMethod.GET, "/arogyashala", "*/opdtimings", "*/profile", "/hospitals", "*/showdoc/1").permitAll()
+//                        .requestMatchers(HttpMethod.POST, "*/login", "*/signup", "*/email", "*/add", "*/specialization","/api/*").permitAll()
+//                        .anyRequest().authenticated());
 
         return http.build();
     }
