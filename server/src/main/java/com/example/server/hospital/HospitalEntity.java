@@ -36,6 +36,10 @@ public class HospitalEntity {
 
     private LocalDateTime otpGeneratedTime;
 
+    private boolean emailVerify;
+
+    private Role role;
+
     @OneToMany(mappedBy = "hospital")
     private List<HospitalSpecializationEntity> hospitalSpecializationEntities = new ArrayList<>();
 
