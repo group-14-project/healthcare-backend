@@ -16,9 +16,9 @@ public class EmailSender {
     private OtpUtil otpUtil;
 
 
-    public void sendOtpEmail(String email, String name) {
+    public String sendOtpEmail(String email, String name) {
+        String otp = otpUtil.generateOtp();
         try {
-            String otp = otpUtil.generateOtp();
             MimeMessage mimeMailMessage = javaMailSender.createMimeMessage();
             MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMailMessage, true, "UTF8");
 
@@ -43,6 +43,7 @@ public class EmailSender {
             // Alternatively, you can rethrow the exception to propagate it further
             throw new RuntimeException(errorMessage, e);
         }
+        return otp;
     }
 
 }

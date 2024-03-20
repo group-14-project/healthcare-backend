@@ -4,6 +4,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+
 @Service
 public class PatientService {
     private final PatientRepository patientRepo;
@@ -21,8 +24,14 @@ public class PatientService {
         }
     }
 
-    public static class EmailNotVerifiedException extends SecurityException{
-        public EmailNotVerifiedException(){ super("email not verified"); }
+    public static class PatientAlreadyRegisteredException extends SecurityException{
+        public PatientAlreadyRegisteredException(){
+            super("Patient not found");
+        }
+    }
+
+    public static class OtpNotVerifiedException extends SecurityException{
+        public OtpNotVerifiedException(){ super("OTP not verified"); }
     }
 
     public static class InvalidPasswordException extends SecurityException{
@@ -42,32 +51,58 @@ public class PatientService {
     }
 
     //This is to register a new patient
-    public PatientEntity registerNewPatient(String name, String email, String password){
+    public PatientEntity registerNewPatient(String firstName, String lastName, String password, String email, String otp){
         PatientEntity patient = patientRepo.findPatientEntitiesByEmail(email);
-        if( patient!=null && !patient.isEmailVerify()){
-            throw new EmailNotVerifiedException();
-        }
-
+        //TODO: check if email is already there and not verified.
         if(patient != null){
             throw new PatientConflictException();
         }
 
         PatientEntity newPatient = new PatientEntity();
-        newPatient.setFirstName(name);
+        newPatient.setFirstName(firstName);
+        newPatient.setLastName(lastName);
         newPatient.setEmail(email);
         newPatient.setPassword(bCryptPasswordEncoder.encode(password));
+        newPatient.setOtp(otp);
+        newPatient.setOtpGeneratedTime(LocalDateTime.now());
 
         return patientRepo.save(newPatient);
     }
 
-    public PatientEntity verifyPatient(String email, String password){
+    public PatientEntity verifyPatient(String email, String otp){
         PatientEntity patient = patientRepo.findPatientEntitiesByEmail(email);
         if(patient==null){
             throw new PatientNotFoundException();
         }
-        if(!bCryptPasswordEncoder.matches(password, patient.getPassword())){
-            throw new InvalidPasswordException();
+        else if(patient.getOtp().equals(otp) && Duration.between(patient.getOtpGeneratedTime(),
+                LocalDateTime.now()).getSeconds()<(2*60)) {
+            patient.setEmailVerify(true);
+            patientRepo.save(patient);
+        }
+        else{
+            throw new OtpNotVerifiedException();
         }
         return patient;
+    }
+
+    public PatientEntity updateOtp(String otp, String email){
+        PatientEntity patient = patientRepo.findPatientEntitiesByEmail(email);
+        if(patient==null){
+            throw new PatientNotFoundException();
+        }
+        patient.setOtp(otp);
+        patient.setOtpGeneratedTime(LocalDateTime.now());
+        return patientRepo.save(patient);
+    }
+
+    public boolean checkPatientVerification(String email){
+        PatientEntity patient = patientRepo.findPatientEntitiesByEmail(email);
+        if(patient==null) return false;
+        return patient.isEmailVerify();
+    }
+
+    public boolean checkPatient(String email){
+        PatientEntity patient = patientRepo.findPatientEntitiesByEmail(email);
+        return patient != null;
     }
 }

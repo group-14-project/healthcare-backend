@@ -3,6 +3,7 @@ package com.example.server.patient;
 import com.example.server.converter.PatientObjectConverter;
 import com.example.server.dto.request.LoginUserRequest;
 import com.example.server.dto.request.SignupPatientRequest;
+import com.example.server.dto.request.VerifyEmailRequest;
 import com.example.server.dto.response.PatientResponse;
 import com.example.server.emailOtp.EmailSender;
 import org.springframework.http.HttpStatus;
@@ -24,37 +25,62 @@ public class PatientController {
         this.emailSender = emailSender;
     }
 
-    public static class UnexpectedError extends SecurityException{
-        public UnexpectedError(){ super("Some unexpected error occured");}
-    }
-    @PostMapping("/signup")
-    ResponseEntity<Void> registerPatient(@RequestBody SignupPatientRequest body){
-        PatientEntity newPatient = patient.registerNewPatient(
-                body.getPatient().getName(),
-                body.getPatient().getEmail(),
-                body.getPatient().getPassword()
-        );
-        if(newPatient==null){
-            throw new UnexpectedError();
-        }
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    public static class PatientVerifiedException extends SecurityException{
+        public PatientVerifiedException(){ super("Patient already Verified");}
     }
 
     @PostMapping("/login")
-    ResponseEntity<PatientResponse> loginPatient(@RequestBody LoginUserRequest body){
+    ResponseEntity<PatientResponse> loginPatient(@RequestBody VerifyEmailRequest body){
+        PatientEntity newPatient = patient.verifyPatient(
+                body.getUser().getEmail(),
+                body.getUser().getOtp()
+        );
+        return ResponseEntity.ok(converter.entityToResponse(newPatient));
+    }
+
+    @PostMapping("/signup")
+    ResponseEntity<Void> registerPatient(@RequestBody VerifyEmailRequest body){
+        PatientEntity newPatient = patient.verifyPatient(
+                body.getUser().getEmail(),
+                body.getUser().getOtp()
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @PostMapping("/loginotp")
+    ResponseEntity<Void> loginPatientemail(@RequestBody LoginUserRequest body){
         PatientEntity currentPatient = patient.verifyPatient(
                 body.getUser().getEmail(),
                 body.getUser().getPassword()
         );
-        return ResponseEntity.ok(converter.entityToResponse(currentPatient));
+        String otp = emailSender.sendOtpEmail(
+                body.getUser().getEmail(),
+                currentPatient.getFirstName()
+        );
+        PatientEntity patient1 = patient.updateOtp(otp, currentPatient.getEmail());
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @PostMapping("/email")
+    @PostMapping("/signupotp")
     ResponseEntity<Void> sendEmail(@RequestBody SignupPatientRequest body){
-        emailSender.sendOtpEmail(
+        if(patient.checkPatientVerification(body.getPatient().getEmail())){
+            throw new PatientVerifiedException();
+        }
+        String otp = emailSender.sendOtpEmail(
                 body.getPatient().getEmail(),
-                body.getPatient().getName()
+                body.getPatient().getFirstName()
         );
+        if(patient.checkPatient(body.getPatient().getEmail())){
+            PatientEntity currentPatient = patient.updateOtp(otp, body.getPatient().getEmail());
+        }else {
+            PatientEntity currentPatient = patient.registerNewPatient(
+                    body.getPatient().getFirstName(),
+                    body.getPatient().getLastName(),
+                    body.getPatient().getPassword(),
+                    body.getPatient().getEmail(),
+                    otp
+            );
+        }
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 

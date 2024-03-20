@@ -17,7 +17,10 @@ public class SignupPatientRequest {
         @JsonProperty("email")
         private String email;
 
-        @JsonProperty("name")
-        private String name;
+        @JsonProperty("firstName")
+        private String firstName;
+
+        @JsonProperty("lastName")
+        private String lastName;
     }
 }
