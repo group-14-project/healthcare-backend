@@ -105,4 +105,10 @@ public class PatientService {
         PatientEntity patient = patientRepo.findPatientEntitiesByEmail(email);
         return patient != null;
     }
+
+    public void passwordChange(String password, String email){
+        PatientEntity patient = patientRepo.findPatientEntitiesByEmail(email);
+        patient.setPassword(password);
+        patientRepo.save(patient);
+    }
 }

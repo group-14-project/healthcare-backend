@@ -29,6 +29,10 @@ public class PatientController {
         public PatientVerifiedException(){ super("Patient already Verified");}
     }
 
+    public static class UnexpectedErrorException extends SecurityException{
+        public UnexpectedErrorException(){ super("Unexpected Error Occured");}
+    }
+
     @PostMapping("/login")
     ResponseEntity<PatientResponse> loginPatient(@RequestBody VerifyEmailRequest body){
         PatientEntity newPatient = patient.verifyPatient(
@@ -72,6 +76,7 @@ public class PatientController {
         );
         if(patient.checkPatient(body.getPatient().getEmail())){
             PatientEntity currentPatient = patient.updateOtp(otp, body.getPatient().getEmail());
+            patient.passwordChange(body.getPatient().getPassword(), body.getPatient().getEmail());
         }else {
             PatientEntity currentPatient = patient.registerNewPatient(
                     body.getPatient().getFirstName(),
@@ -82,6 +87,25 @@ public class PatientController {
             );
         }
         return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @PostMapping("/verifyOtp")
+    ResponseEntity<Void> verifyOtp(String email, String name){
+        if(!patient.checkPatient(email)){
+            throw new UnexpectedErrorException();
+        }
+        String otp = emailSender.sendOtpEmail(email, name);
+        PatientEntity newPatient = patient.updateOtp(otp, email);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @PostMapping("/changePassword")
+    ResponseEntity<Void> changePassword(@RequestBody LoginUserRequest body){
+        patient.passwordChange(
+                body.getUser().getPassword(),
+                body.getUser().getEmail()
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
 }
