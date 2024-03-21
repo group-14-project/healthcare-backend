@@ -1,25 +1,48 @@
 package com.example.server.doctor;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
+import com.example.server.dto.request.LoginUserRequest;
+import com.example.server.dto.request.VerifyEmailRequest;
+import com.example.server.emailOtp.EmailSender;
+import com.example.server.patient.PatientService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-@Controller
+@RestController
 @RequestMapping("/doctor")
+@CrossOrigin
 public class DoctorController {
-    private final DoctorService doctorService;
+    private final DoctorService doctor;
 
-    public DoctorController(DoctorService doctorService) {
-        this.doctorService = doctorService;
+    private final EmailSender emailSender;
+
+    public DoctorController(DoctorService doctorService, DoctorService doctor, EmailSender emailSender) {
+        this.doctor = doctor;
+        this.emailSender = emailSender;
     }
 
-//    @GetMapping("/showdoc/{id}")
-//    ResponseEntity<Optional<DoctorEntity>> getDoc(@PathVariable Integer id) {
-//        Optional<DoctorEntity> doctor = doctorService.getDoc(id);
-//        if (doctor.isPresent()) {
-//            return ResponseEntity.ok(doctor); // Returning ResponseEntity with status OK and doctor as body
-//        } else {
-//            return ResponseEntity.notFound().build(); // Returning ResponseEntity with status NOT_FOUND
-//        }
-//
-//    }
+    @PostMapping("/login")
+    ResponseEntity<DoctorEntity> loginDoctor(@RequestBody VerifyEmailRequest body){
+        DoctorEntity newDoctor = doctor.verifyDoctor(
+                body.getUser().getEmail(),
+                body.getUser().getOtp()
+        );
+        return ResponseEntity.ok(newDoctor);
+    }
+
+    @PostMapping("/loginotp")
+    ResponseEntity<Void> loginDoctoremail(@RequestBody LoginUserRequest body){
+        if(!doctor.checkDoctor(body.getUser().getEmail())){
+            throw new PatientService.PatientNotFoundException();
+        }
+        DoctorEntity currentDoctor = doctor.doctorDetails(body.getUser().getEmail());
+        String otp = emailSender.sendOtpEmail(
+                body.getUser().getEmail(),
+                currentDoctor.getFirstName()
+        );
+        DoctorEntity doctor1 = doctor.updateOtp(otp, currentDoctor.getEmail());
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+
 }

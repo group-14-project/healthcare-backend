@@ -1,6 +1,10 @@
 package com.example.server.doctor;
 
+import com.example.server.patient.PatientService;
 import org.springframework.stereotype.Service;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 @Service
 public class DoctorService {
@@ -42,6 +46,43 @@ public class DoctorService {
         newDoctor.setPassword("123");
 
         return doctorRepository.save(newDoctor);
+    }
+
+    public DoctorEntity verifyDoctor(String email, String otp){
+        DoctorEntity doctor = doctorRepository.findDoctorEntitiesByEmail(email);
+        if(doctor==null){
+            throw new PatientService.PatientNotFoundException();
+        }
+        else if(doctor.getOtp().equals(otp) && Duration.between(doctor.getOtpGeneratedTime(),
+                LocalDateTime.now()).getSeconds()<(2*60)) {
+            return doctor;
+        }
+        else{
+            throw new PatientService.OtpNotVerifiedException();
+        }
+    }
+
+    public boolean checkDoctor(String email){
+        DoctorEntity doctor = doctorRepository.findDoctorEntitiesByEmail(email);
+        return doctor != null;
+    }
+
+    public DoctorEntity doctorDetails(String email){
+        DoctorEntity doctor = doctorRepository.findDoctorEntitiesByEmail(email);
+        if(doctor==null){
+            throw new PatientService.PatientNotFoundException();
+        }
+        return doctor;
+    }
+
+    public DoctorEntity updateOtp(String otp, String email){
+        DoctorEntity doctor = doctorRepository.findDoctorEntitiesByEmail(email);
+        if(doctor==null){
+            throw new PatientService.PatientNotFoundException();
+        }
+        doctor.setOtp(otp);
+        doctor.setOtpGeneratedTime(LocalDateTime.now());
+        return doctorRepository.save(doctor);
     }
 
 
