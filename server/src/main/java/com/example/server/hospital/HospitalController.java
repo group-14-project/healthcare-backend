@@ -1,19 +1,19 @@
 package com.example.server.hospital;
-
 import com.example.server.doctor.DoctorService;
 import com.example.server.dto.request.LoginUserRequest;
 import com.example.server.dto.request.VerifyEmailRequest;
+import com.example.server.dto.response.ApiResponse;
 import com.example.server.emailOtp.EmailSender;
 import com.example.server.hospitalSpecialization.HospitalSpecializationService;
 import com.example.server.patient.PatientService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 @RestController
 @RequestMapping("/hospital")
 @CrossOrigin
-public class HospitalController {
+public class HospitalController
+{
 
     private final HospitalService hospital;
 
@@ -23,7 +23,8 @@ public class HospitalController {
 
     private final HospitalSpecializationService hospitalSpecialization;
 
-    public HospitalController(HospitalService hospitalService, HospitalSpecializationService hospitalSpecialization, DoctorService doctorService, EmailSender emailSender){
+    public HospitalController(HospitalService hospitalService, HospitalSpecializationService hospitalSpecialization, DoctorService doctorService, EmailSender emailSender)
+    {
         this.hospital = hospitalService;
         this.hospitalSpecialization = hospitalSpecialization;
         this.doctorService = doctorService;
@@ -31,7 +32,8 @@ public class HospitalController {
     }
 
     @PostMapping("/login")
-    ResponseEntity<HospitalEntity> loginPatient(@RequestBody VerifyEmailRequest body){
+    ResponseEntity<HospitalEntity> loginPatient(@RequestBody VerifyEmailRequest body)
+    {
         HospitalEntity newHospital = hospital.verifyHospital(
                 body.getUser().getEmail(),
                 body.getUser().getOtp()
@@ -40,7 +42,8 @@ public class HospitalController {
     }
 
     @PostMapping("/loginotp")
-    ResponseEntity<Void> loginHospitalemail(@RequestBody LoginUserRequest body){
+    ResponseEntity<Void> loginHospitalemail(@RequestBody LoginUserRequest body)
+    {
         if(!hospital.checkHospital(body.getUser().getEmail())){
             throw new PatientService.PatientNotFoundException();
         }
@@ -53,6 +56,12 @@ public class HospitalController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    @PutMapping("/updatePassword")
+    ResponseEntity<ApiResponse> updatePassword(@RequestBody LoginUserRequest data)
+    {
+        hospital.updatePassword(data);
+        return new ResponseEntity<>(new ApiResponse("Password changes successfully",true),HttpStatus.OK);
+    }
 
 
 //    @PostMapping("/specialization")

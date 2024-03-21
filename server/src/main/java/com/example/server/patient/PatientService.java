@@ -1,5 +1,6 @@
 package com.example.server.patient;
 
+import com.example.server.dto.request.PatientUpdateRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -118,5 +119,19 @@ public class PatientService {
             throw new PatientNotFoundException();
         }
         return patient;
+    }
+
+    public  void updateDetails(PatientUpdateRequest body)
+    {
+        PatientEntity patient=patientRepo.findPatientEntitiesByEmail(body.getEmail());
+       patient.setFirstName(body.getFirstName());
+       patient.setLastName(body.getLastName());
+       patient.setPhoneNumber(body.getPhoneNumber());
+       patient.setHeight(body.getWeight());
+       patient.setBloodGroup(body.getBloodGroup());
+       patient.setGender(body.getGender());
+       patient.setAddress(body.getAddress());
+       patient.setPinCode(body.getPinCode());
+       patientRepo.save(patient);
     }
 }

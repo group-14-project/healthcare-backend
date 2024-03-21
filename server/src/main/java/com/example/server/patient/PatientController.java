@@ -2,8 +2,10 @@ package com.example.server.patient;
 
 import com.example.server.converter.PatientObjectConverter;
 import com.example.server.dto.request.LoginUserRequest;
+import com.example.server.dto.request.PatientUpdateRequest;
 import com.example.server.dto.request.SignupPatientRequest;
 import com.example.server.dto.request.VerifyEmailRequest;
+import com.example.server.dto.response.ApiResponse;
 import com.example.server.dto.response.PatientResponse;
 import com.example.server.emailOtp.EmailSender;
 import org.springframework.http.HttpStatus;
@@ -99,7 +101,8 @@ public class PatientController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @PostMapping("/changePassword")
+
+    @PutMapping("/changePassword")
     ResponseEntity<Void> changePassword(@RequestBody LoginUserRequest body){
         patient.passwordChange(
                 body.getUser().getPassword(),
@@ -107,5 +110,14 @@ public class PatientController {
         );
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
-
+    @PutMapping("/updateDetail")
+    public ResponseEntity<ApiResponse> updateDetail(@RequestBody PatientUpdateRequest body)
+    {
+        if(!patient.checkPatient(body.getEmail()))
+        {
+            throw new PatientService.PatientNotFoundException();
+        }
+        patient.updateDetails(body);
+        return new ResponseEntity<>(new ApiResponse("Details updated successfully",true),HttpStatus.OK);
+    }
 }
