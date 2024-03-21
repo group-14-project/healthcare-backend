@@ -1,10 +1,9 @@
 package com.example.server.dto.request;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
-
 @Getter
-public class VerifyEmailRequest {
+public class VerifyEmailRequest
+{
     @JsonProperty("user")
     private User user;
 
