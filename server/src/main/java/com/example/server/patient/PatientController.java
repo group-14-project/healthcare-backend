@@ -53,10 +53,10 @@ public class PatientController {
 
     @PostMapping("/loginotp")
     ResponseEntity<Void> loginPatientemail(@RequestBody LoginUserRequest body){
-        PatientEntity currentPatient = patient.verifyPatient(
-                body.getUser().getEmail(),
-                body.getUser().getPassword()
-        );
+        if(!patient.checkPatient(body.getUser().getEmail())){
+            throw new PatientService.PatientNotFoundException();
+        }
+        PatientEntity currentPatient = patient.patientDetails(body.getUser().getEmail());
         String otp = emailSender.sendOtpEmail(
                 body.getUser().getEmail(),
                 currentPatient.getFirstName()

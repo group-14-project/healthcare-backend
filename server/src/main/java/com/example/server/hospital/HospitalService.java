@@ -1,12 +1,23 @@
 package com.example.server.hospital;
-import com.example.server.dto.request.LoginUserRequest;
+
+import com.example.server.patient.PatientService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
+
 @Service
 public class HospitalService {
     private final HospitalRepository hospitalRepository;
 
     private final PasswordEncoder passwordEncoder;
+
+    public static class HospitalNotFoundException extends SecurityException{
+        public HospitalNotFoundException(){
+            super("Patient not found");
+        }
+    }
 
 
     public HospitalService(HospitalRepository hospitalRepository, PasswordEncoder passwordEncoder) {
@@ -14,24 +25,45 @@ public class HospitalService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public void Authenticate(LoginUserRequest loginUserRequest)
-    {
-        String hospitalEmail = loginUserRequest.getUser().getEmail();
-        try {
-            HospitalEntity hospital = hospitalRepository.findByEmail(hospitalEmail)
-                    .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password"));
-
-            String userPassword = loginUserRequest.getUser().getPassword();
-            if (!passwordEncoder.matches(userPassword, hospital.getPassword())) {
-                throw new InvalidCredentialsException("Invalid email or password");
-            }
-            // Authentication successful
-            System.out.println("Authentication successful for user: " + hospitalEmail);
-        } catch (InvalidCredentialsException e) {
-            System.out.println("Invalid credentials for user: " + hospitalEmail);
-            throw e; // Rethrow the exception for controller to handle
+    public HospitalEntity verifyHospital(String email, String otp){
+        HospitalEntity hospital = hospitalRepository.findByEmail(email);
+        if(hospital==null){
+            throw new HospitalNotFoundException();
         }
+        else if(hospital.getOtp().equals(otp) && Duration.between(hospital.getOtpGeneratedTime(),
+                LocalDateTime.now()).getSeconds()<(2*60)) {
+            hospital.setEmailVerify(true);
+            hospitalRepository.save(hospital);
+        }
+        else{
+            throw new PatientService.OtpNotVerifiedException();
+        }
+        return hospital;
     }
+
+    public boolean checkHospital(String email){
+        HospitalEntity hospital = hospitalRepository.findByEmail(email);
+        return hospital != null;
+    }
+
+    public HospitalEntity hospitalDetails(String email){
+        HospitalEntity hospital = hospitalRepository.findByEmail(email);
+        if(hospital==null){
+            throw new PatientService.PatientNotFoundException();
+        }
+        return hospital;
+    }
+
+    public HospitalEntity updateOtp(String otp, String email){
+        HospitalEntity hospital = hospitalRepository.findByEmail(email);
+        if(hospital==null){
+            throw new PatientService.PatientNotFoundException();
+        }
+        hospital.setOtp(otp);
+        hospital.setOtpGeneratedTime(LocalDateTime.now());
+        return hospitalRepository.save(hospital);
+    }
+
 
 
 

@@ -111,4 +111,12 @@ public class PatientService {
         patient.setPassword(password);
         patientRepo.save(patient);
     }
+
+    public PatientEntity patientDetails(String email){
+        PatientEntity patient = patientRepo.findPatientEntitiesByEmail(email);
+        if(patient==null){
+            throw new PatientNotFoundException();
+        }
+        return patient;
+    }
 }
