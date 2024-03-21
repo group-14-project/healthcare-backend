@@ -3,8 +3,13 @@ package com.example.server.hospital;
 import com.example.server.doctor.DoctorEntity;
 import com.example.server.doctor.DoctorService;
 import com.example.server.dto.request.AddSpecializationRequest;
+import com.example.server.dto.request.LoginUserRequest;
+import com.example.server.dto.request.VerifyEmailRequest;
+import com.example.server.dto.response.ApiResponse;
+import com.example.server.dto.response.PatientResponse;
 import com.example.server.hospitalSpecialization.HospitalSpecializationEntity;
 import com.example.server.hospitalSpecialization.HospitalSpecializationService;
+import com.example.server.patient.PatientEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,26 +31,42 @@ public class HospitalController {
         this.doctorService = doctorService;
     }
 
-    @PostMapping("/specialization")
-    ResponseEntity<Void> registerNewSpecialization(@RequestBody AddSpecializationRequest body){
-        System.out.println("Heloooooo");
-        DoctorEntity newDoctor = doctorService.registerNewDoctor(
-                body.getSpecialization().getDoctorFirstName(),
-                body.getSpecialization().getDoctorLastName(),
-                body.getSpecialization().getDoctorEmail(),
-                body.getSpecialization().getDoctorRegistrationId()
-        );
+    @PostMapping("/login")
+    ResponseEntity<ApiResponse> loginHospital(@RequestBody LoginUserRequest loginUserRequest)
+    {
+        try
+        {
+            hospitalService.Authenticate(loginUserRequest);
+            return new ResponseEntity<ApiResponse>(new ApiResponse("Login Successfully",true),HttpStatus.OK);
 
-        HospitalSpecializationEntity newSpecialization = hospitalSpecialization.registerNewSpecialization(
-                body.getSpecialization().getName(),
-                body.getSpecialization().getHospitalId(),
-                body.getSpecialization().getDoctorEmail()
-        );
-
-        newDoctor.setHospitalSpecialization(newSpecialization);
-        doctorService.addDoctor(newDoctor);
-
-
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        } catch (HospitalService.InvalidCredentialsException e)
+        {
+            return new ResponseEntity<ApiResponse>(new ApiResponse("Incorrect Email or password",false),HttpStatus.UNAUTHORIZED);
+        }
     }
+
+
+
+//    @PostMapping("/specialization")
+//    ResponseEntity<Void> registerNewSpecialization(@RequestBody AddSpecializationRequest body){
+//        System.out.println("Heloooooo");
+//        DoctorEntity newDoctor = doctorService.registerNewDoctor(
+//                body.getSpecialization().getDoctorFirstName(),
+//                body.getSpecialization().getDoctorLastName(),
+//                body.getSpecialization().getDoctorEmail(),
+//                body.getSpecialization().getDoctorRegistrationId()
+//        );
+//
+//        HospitalSpecializationEntity newSpecialization = hospitalSpecialization.registerNewSpecialization(
+//                body.getSpecialization().getName(),
+//                body.getSpecialization().getHospitalId(),
+//                body.getSpecialization().getDoctorEmail()
+//        );
+//
+//        newDoctor.setHospitalSpecialization(newSpecialization);
+//        doctorService.addDoctor(newDoctor);
+//
+//
+//        return ResponseEntity.status(HttpStatus.CREATED).build();
+//    }
 }
