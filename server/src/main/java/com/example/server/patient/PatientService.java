@@ -1,6 +1,8 @@
 package com.example.server.patient;
 
-import com.example.server.dto.request.PatientUpdateRequest;
+import com.example.server.dto.request.PatientDetailsRequest;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -12,6 +14,27 @@ import java.time.LocalDateTime;
 public class PatientService {
     private final PatientRepository patientRepo;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+
+
+    @Autowired
+    private ModelMapper modelMapper;
+
+    public PatientDetailsRequest DetailsAdd(PatientDetailsRequest patientDto)
+    {
+        PatientEntity patient=patientRepo.findPatientEntitiesByEmail(patientDto.getEmail());
+        patient.setFirstName(patientDto.getFirstName());
+        patient.setLastName(patientDto.getLastName());
+        patient.setCity(patientDto.getCity());
+        patient.setWeight(patientDto.getWeight());
+        patient.setGender(patientDto.getGender());
+        patient.setAddress(patientDto.getAddress());
+        patient.setHeight(patientDto.getHeight());
+        patient.setPinCode(patientDto.getPinCode());
+        patient.setBloodGroup(patientDto.getBloodGroup());
+        patient.setPhoneNumber(patientDto.getPhoneNumber());
+        PatientEntity detailsPatient=patientRepo.save(patient);
+        return this.modelMapper.map(detailsPatient,PatientDetailsRequest.class);
+    }
 
     public static class PatientConflictException extends SecurityException{
         public PatientConflictException(){
@@ -121,7 +144,7 @@ public class PatientService {
         return patient;
     }
 
-    public  void updateDetails(PatientUpdateRequest body)
+    public  void updateDetails(PatientDetailsRequest body)
     {
         PatientEntity patient=patientRepo.findPatientEntitiesByEmail(body.getEmail());
        patient.setFirstName(body.getFirstName());
