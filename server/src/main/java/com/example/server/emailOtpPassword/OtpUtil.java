@@ -1,4 +1,4 @@
-package com.example.server.emailOtp;
+package com.example.server.emailOtpPassword;
 
 import lombok.Getter;
 import org.springframework.stereotype.Component;

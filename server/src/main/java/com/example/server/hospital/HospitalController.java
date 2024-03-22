@@ -3,7 +3,7 @@ import com.example.server.doctor.DoctorService;
 import com.example.server.dto.request.LoginUserRequest;
 import com.example.server.dto.request.VerifyEmailRequest;
 import com.example.server.dto.response.ApiResponse;
-import com.example.server.emailOtp.EmailSender;
+import com.example.server.emailOtpPassword.EmailSender;
 import com.example.server.hospitalSpecialization.HospitalSpecializationService;
 import com.example.server.patient.PatientService;
 import org.springframework.http.HttpStatus;
@@ -62,28 +62,4 @@ public class HospitalController
         hospital.updatePassword(data);
         return new ResponseEntity<>(new ApiResponse("Password changes successfully",true),HttpStatus.OK);
     }
-
-
-//    @PostMapping("/specialization")
-//    ResponseEntity<Void> registerNewSpecialization(@RequestBody AddSpecializationRequest body){
-//        System.out.println("Heloooooo");
-//        DoctorEntity newDoctor = doctorService.registerNewDoctor(
-//                body.getSpecialization().getDoctorFirstName(),
-//                body.getSpecialization().getDoctorLastName(),
-//                body.getSpecialization().getDoctorEmail(),
-//                body.getSpecialization().getDoctorRegistrationId()
-//        );
-//
-//        HospitalSpecializationEntity newSpecialization = hospitalSpecialization.registerNewSpecialization(
-//                body.getSpecialization().getName(),
-//                body.getSpecialization().getHospitalId(),
-//                body.getSpecialization().getDoctorEmail()
-//        );
-//
-//        newDoctor.setHospitalSpecialization(newSpecialization);
-//        doctorService.addDoctor(newDoctor);
-//
-//
-//        return ResponseEntity.status(HttpStatus.CREATED).build();
-//    }
 }

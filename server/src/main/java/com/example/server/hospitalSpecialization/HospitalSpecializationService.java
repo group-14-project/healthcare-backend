@@ -23,16 +23,16 @@ public class HospitalSpecializationService {
         this.doctorService = doctorService;
     }
 
-//    public HospitalSpecializationEntity registerNewSpecialization(String name, Integer hospitalId, String email){
-//        SpecializationEntity specializationEntity = specializationService.getSpecializationId(name);
-//        HospitalEntity hospitalEntity = hospitalService.findHospitalById(hospitalId);
-//        DoctorEntity doctorEntity = doctorService.findDoctorByEmail(email);
-//
-//        HospitalSpecializationEntity newSpecialization = new HospitalSpecializationEntity();
-//        newSpecialization.setSpecialization(specializationEntity);
-//        newSpecialization.setHospital(hospitalEntity);
-//        newSpecialization.setHeadDoctor(doctorEntity);
-//
-//        return hospitalSpecializationRepository.save(newSpecialization);
-//    }
+    public HospitalSpecializationEntity registerNewSpecialization(String name, String hospitalEmail, String email){
+        SpecializationEntity specializationEntity = specializationService.getSpecializationId(name);
+        HospitalEntity hospitalEntity = hospitalService.hospitalDetails(hospitalEmail);
+        DoctorEntity doctorEntity = doctorService.findDoctorByEmail(email);
+
+        HospitalSpecializationEntity newSpecialization = new HospitalSpecializationEntity();
+        newSpecialization.setSpecialization(specializationEntity);
+        newSpecialization.setHospital(hospitalEntity);
+        newSpecialization.setHeadDoctor(doctorEntity);
+
+        return hospitalSpecializationRepository.save(newSpecialization);
+    }
 }

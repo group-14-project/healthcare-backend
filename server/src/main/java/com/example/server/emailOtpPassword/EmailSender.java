@@ -1,4 +1,4 @@
-package com.example.server.emailOtp;
+package com.example.server.emailOtpPassword;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -61,7 +61,7 @@ public class EmailSender {
                 Hi %s,
                 Your Password for the AROGYASHALA account is:
                 %s
-                Please verify your email and change your password
+                Please login with you email and change your password
                 Regards,
                 Team Arogyashala
                 """, name,password);

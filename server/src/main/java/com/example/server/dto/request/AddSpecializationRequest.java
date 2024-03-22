@@ -17,8 +17,8 @@ public class AddSpecializationRequest {
         @JsonProperty("name")
         private String name;
 
-        @JsonProperty("hospitalId")
-        private Integer hospitalId;
+        @JsonProperty("hospitalEmail")
+        private String hospitalEmail;
 
         @JsonProperty("doctorFirstName")
         private String doctorFirstName;

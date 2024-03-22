@@ -2,7 +2,7 @@ package com.example.server.doctor;
 
 import com.example.server.dto.request.LoginUserRequest;
 import com.example.server.dto.request.VerifyEmailRequest;
-import com.example.server.emailOtp.EmailSender;
+import com.example.server.emailOtpPassword.EmailSender;
 import com.example.server.patient.PatientService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

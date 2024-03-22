@@ -1,6 +1,9 @@
 package com.example.server.doctor;
 
+import com.example.server.emailOtpPassword.EmailSender;
+import com.example.server.emailOtpPassword.PasswordUtil;
 import com.example.server.patient.PatientService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -10,17 +13,22 @@ import java.time.LocalDateTime;
 public class DoctorService {
     private final DoctorRepository doctorRepository;
 
-    public DoctorService(DoctorRepository doctorRepository) {
+    private final PasswordUtil passwordUtil;
+
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+
+    private final EmailSender emailSender;
+
+    public DoctorService(DoctorRepository doctorRepository, PasswordUtil passwordUtil, BCryptPasswordEncoder bCryptPasswordEncoder, EmailSender emailSender) {
         this.doctorRepository = doctorRepository;
+        this.passwordUtil = passwordUtil;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.emailSender = emailSender;
     }
 
     public void addDoctor(DoctorEntity newDoctor) {
         doctorRepository.save(newDoctor);
     }
-
-//    public Optional<DoctorEntity> getDoc(Integer id) {
-//        return doctorRepository.findById(id);
-//    }
 
     public static class DoctorExists extends SecurityException{
         public DoctorExists(){
@@ -43,9 +51,15 @@ public class DoctorService {
         newDoctor.setLastName(lastName);
         newDoctor.setEmail(email);
         newDoctor.setRegistrationId(registrationId);
-        newDoctor.setPassword("123");
+        String randomPassword = passwordUtil.generateRandomPassword();
+        newDoctor.setPassword(bCryptPasswordEncoder.encode(randomPassword));
+        doctorRepository.save(newDoctor);
 
-        return doctorRepository.save(newDoctor);
+        emailSender.sendMailWithPassword(
+                newDoctor.getEmail(), newDoctor.getFirstName(), randomPassword
+        );
+        return doctorRepository.findDoctorEntitiesByEmail(newDoctor.getEmail());
+
     }
 
     public DoctorEntity verifyDoctor(String email, String otp){

@@ -7,7 +7,7 @@ import com.example.server.dto.request.SignupPatientRequest;
 import com.example.server.dto.request.VerifyEmailRequest;
 import com.example.server.dto.response.ApiResponse;
 import com.example.server.dto.response.PatientResponse;
-import com.example.server.emailOtp.EmailSender;
+import com.example.server.emailOtpPassword.EmailSender;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
