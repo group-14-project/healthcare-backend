@@ -2,7 +2,7 @@ package com.example.server.patient;
 
 import com.example.server.converter.PatientObjectConverter;
 import com.example.server.dto.request.LoginUserRequest;
-import com.example.server.dto.request.PatientUpdateRequest;
+import com.example.server.dto.request.PatientDetailsRequest;
 import com.example.server.dto.request.SignupPatientRequest;
 import com.example.server.dto.request.VerifyEmailRequest;
 import com.example.server.dto.response.ApiResponse;
@@ -102,6 +102,13 @@ public class PatientController {
     }
 
 
+    @PostMapping("/DetailsAdd")
+    ResponseEntity<PatientDetailsRequest> DetailsAdd(@RequestBody PatientDetailsRequest patientDto)
+    {
+        PatientDetailsRequest details=this.patient.DetailsAdd(patientDto);
+        return new ResponseEntity<>(details,HttpStatus.OK);
+    }
+
     @PutMapping("/changePassword")
     ResponseEntity<Void> changePassword(@RequestBody LoginUserRequest body){
         patient.passwordChange(
@@ -111,7 +118,7 @@ public class PatientController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
     @PutMapping("/updateDetail")
-    public ResponseEntity<ApiResponse> updateDetail(@RequestBody PatientUpdateRequest body)
+    public ResponseEntity<ApiResponse> updateDetail(@RequestBody PatientDetailsRequest body)
     {
         if(!patient.checkPatient(body.getEmail()))
         {
