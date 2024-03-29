@@ -1,9 +1,8 @@
 package com.example.server.dto.request;
-
 import lombok.Data;
 
 @Data
-public class PatientUpdateRequest
+public class PatientDetailsRequest
 {
     private String email;
 
