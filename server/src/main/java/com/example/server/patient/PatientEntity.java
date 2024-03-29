@@ -1,6 +1,7 @@
 package com.example.server.patient;
 
 import com.example.server.connection.ConnectionEntity;
+import com.example.server.hospital.Role;
 import com.example.server.report.ReportEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -48,8 +49,12 @@ public class PatientEntity{
     private String otp;
 
     private LocalDateTime otpGeneratedTime;
+
+    private Role role;
+
     @OneToMany(mappedBy = "patient")
     private List<ConnectionEntity> connection;
+
     @OneToMany(mappedBy = "pat")
     private List<ReportEntity> report;
 }

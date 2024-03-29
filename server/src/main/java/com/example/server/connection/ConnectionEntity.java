@@ -7,7 +7,9 @@ import com.example.server.report.ReportEntity;
 import com.example.server.reviews.ReviewEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -19,8 +21,13 @@ public class ConnectionEntity
 {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
-    @Column(name = "id")
-    private  int id;
+    private  Integer id;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Date createdAt;
+
     @ManyToOne
     @JoinColumn(name = "doctorId")
     private DoctorEntity doctor;
@@ -31,10 +38,13 @@ public class ConnectionEntity
 
     @OneToMany(mappedBy = "connect")
     private List<ConsentEntity> consent;
+
     @OneToMany(mappedBy = "con")
     private List<ReportEntity> report;
-    @OneToMany(mappedBy = "conn")
-    private List<ConsultationEntity> consult;
-    @OneToMany(mappedBy = "conn1")
-    private List<ReviewEntity> review;
+
+    @OneToMany(mappedBy = "connectionId")
+    private List<ConsultationEntity> consultation;
+
+    @OneToOne(mappedBy = "conn1")
+    private ReviewEntity review;
 }

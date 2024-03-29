@@ -5,7 +5,9 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -16,15 +18,24 @@ import java.util.Date;
 public class ConsultationEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
+
     private String mainSymptom;
-    private String secSymptom;
+
+    private String secondarySymptom;
+
     private String prescription;
-    @Lob
-    private byte[] recordingLink;
+
+    private String recordingLink;
+
+    private LocalDateTime appointmentDateAndTime;
+
     @Temporal(TemporalType.TIMESTAMP)
-    private Date myDate;
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Date createdAt;
+
     @ManyToOne
     @JoinColumn(name = "connectionId")
-    private ConnectionEntity conn;
+    private ConnectionEntity connectionId;
 }

@@ -13,10 +13,13 @@ import lombok.NoArgsConstructor;
 public class ReviewEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-    private int rating;
+    private Integer id;
+
+    private Integer rating;
+
     private String review;
-    @ManyToOne
+
+    @OneToOne
     @JoinColumn(name = "connectionId")
     private ConnectionEntity conn1;
 
