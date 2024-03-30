@@ -1,9 +1,13 @@
 package com.example.server.hospital;
+import com.example.server.doctor.DoctorEntity;
+import com.example.server.doctor.DoctorRepository;
 import com.example.server.doctor.DoctorService;
+import com.example.server.dto.request.DoctorDto;
 import com.example.server.dto.request.LoginUserRequest;
 import com.example.server.dto.request.VerifyEmailRequest;
 import com.example.server.dto.response.ApiResponse;
 import com.example.server.emailOtpPassword.EmailSender;
+import com.example.server.hospitalSpecialization.HospitalSpecializationEntity;
 import com.example.server.hospitalSpecialization.HospitalSpecializationService;
 import com.example.server.patient.PatientService;
 import org.springframework.http.HttpStatus;
@@ -22,13 +26,15 @@ public class HospitalController
     private final EmailSender emailSender;
 
     private final HospitalSpecializationService hospitalSpecialization;
+    private final DoctorRepository doctorRepository;
 
-    public HospitalController(HospitalService hospitalService, HospitalSpecializationService hospitalSpecialization, DoctorService doctorService, EmailSender emailSender)
+    public HospitalController(HospitalService hospitalService, HospitalSpecializationService hospitalSpecialization, DoctorService doctorService, EmailSender emailSender, DoctorRepository doctorRepository)
     {
         this.hospital = hospitalService;
         this.hospitalSpecialization = hospitalSpecialization;
         this.doctorService = doctorService;
         this.emailSender = emailSender;
+        this.doctorRepository = doctorRepository;
     }
 
     @PostMapping("/login")
@@ -62,4 +68,15 @@ public class HospitalController
         hospital.updatePassword(data);
         return new ResponseEntity<>(new ApiResponse("Password changes successfully",true),HttpStatus.OK);
     }
+
+    @PostMapping("/addDoctor")
+    ResponseEntity<ApiResponse> addDoctor(@RequestBody DoctorDto doctor)
+    {
+        HospitalSpecializationEntity hsc=hospitalSpecialization.getDoctorSpecialization(doctor);
+        DoctorEntity doc=doctorService.registerNewDoctor(doctor.getFirstName(),doctor.getLastName(),doctor.getDoctorEmail(),doctor.getRegistrationId());
+        doc.setHospitalSpecialization(hsc);
+        doctorRepository.save(doc);
+        return new ResponseEntity<>(new ApiResponse("Doctor added successfully",true),HttpStatus.OK);
+    }
+
 }

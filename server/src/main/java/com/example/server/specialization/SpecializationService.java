@@ -10,6 +10,12 @@ public class SpecializationService {
         this.specializationRepository = specializationRepository;
     }
 
+
+    public static class SpecializationNotFoundException extends SecurityException{
+        public SpecializationNotFoundException(){
+            super("Specialization not found");
+        }
+    }
     public SpecializationEntity getSpecializationId(String name){
         SpecializationEntity newspecializationEntity = specializationRepository.findSpecializationEntityByName(name);
         return newspecializationEntity;
@@ -22,4 +28,5 @@ public class SpecializationService {
 
         return specializationRepository.save(newspecializationEntity);
     }
+
 }
