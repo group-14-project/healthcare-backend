@@ -1,8 +1,16 @@
 package com.example.server.hospital;
 
+import com.example.server.doctor.DoctorController;
+import com.example.server.doctor.DoctorEntity;
+import com.example.server.doctor.DoctorRepository;
+import com.example.server.dto.request.DoctorDto;
 import com.example.server.dto.request.LoginUserRequest;
+import com.example.server.hospitalSpecialization.HospitalSpecializationEntity;
+import com.example.server.hospitalSpecialization.HospitalSpecializationRepository;
 import com.example.server.patient.PatientService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.server.specialization.SpecializationEntity;
+import com.example.server.specialization.SpecializationRepository;
+import com.example.server.specialization.SpecializationService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,12 +24,12 @@ public class HospitalService {
 
     private final PasswordEncoder passwordEncoder;
 
-
-
-    @Autowired
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    private  final SpecializationRepository specializationRepository;
 
+    private final DoctorRepository doctorRepository;
+    private final HospitalSpecializationRepository hospitalSpecializationRepository;
 
     public static class HospitalNotFoundException extends SecurityException{
         public HospitalNotFoundException(){
@@ -30,10 +38,13 @@ public class HospitalService {
     }
 
 
-    public HospitalService(HospitalRepository hospitalRepository, PasswordEncoder passwordEncoder, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    public HospitalService(HospitalRepository hospitalRepository, PasswordEncoder passwordEncoder, BCryptPasswordEncoder bCryptPasswordEncoder, SpecializationRepository specilization, SpecializationRepository specialization, SpecializationRepository specializationRepository, DoctorRepository doctorRepository, HospitalSpecializationRepository hospitalSpecializationRepository) {
         this.hospitalRepository = hospitalRepository;
         this.passwordEncoder = passwordEncoder;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.specializationRepository = specializationRepository;
+        this.doctorRepository = doctorRepository;
+        this.hospitalSpecializationRepository = hospitalSpecializationRepository;
     }
 
     public HospitalEntity verifyHospital(String email, String otp){

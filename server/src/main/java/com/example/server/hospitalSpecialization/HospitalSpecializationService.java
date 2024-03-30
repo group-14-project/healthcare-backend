@@ -2,6 +2,7 @@ package com.example.server.hospitalSpecialization;
 
 import com.example.server.doctor.DoctorEntity;
 import com.example.server.doctor.DoctorService;
+import com.example.server.dto.request.DoctorDto;
 import com.example.server.hospital.HospitalEntity;
 import com.example.server.hospital.HospitalService;
 import com.example.server.specialization.SpecializationEntity;
@@ -34,5 +35,20 @@ public class HospitalSpecializationService {
         newSpecialization.setHeadDoctor(doctorEntity);
 
         return hospitalSpecializationRepository.save(newSpecialization);
+    }
+    public HospitalSpecializationEntity getDoctorSpecialization(DoctorDto doctor)
+    {
+        HospitalEntity hospital=hospitalService.hospitalDetails(doctor.getHospitalEmail());
+        if(hospital==null)
+        {
+            throw new HospitalService.HospitalNotFoundException();
+        }
+        SpecializationEntity specialization=specializationService.getSpecializationId(doctor.getSpecialization());
+        if(specialization==null)
+        {
+            throw new SpecializationService.SpecializationNotFoundException();
+        }
+        HospitalSpecializationEntity spec=hospitalSpecializationRepository.findByHospitalIdAndSpecializationId(hospital.getId(),specialization.getId());
+        return spec;
     }
 }
