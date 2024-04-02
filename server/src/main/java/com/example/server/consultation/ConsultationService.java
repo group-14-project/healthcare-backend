@@ -1,6 +1,7 @@
 package com.example.server.consultation;
 
 import com.example.server.connection.ConnectionEntity;
+import com.example.server.patient.PatientController;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -23,4 +24,11 @@ public class ConsultationService {
         return consultationRepo.save(newConsultation);
     }
 
+    public ConsultationEntity setPrescriptionRecordingLink(String prescription, String recordingLink, Integer id) {
+        ConsultationEntity consultationEntity = consultationRepo.findById(id).orElseThrow(PatientController.UnexpectedErrorException::new);
+        consultationEntity.setPrescription(prescription);
+        consultationEntity.setRecordingLink(recordingLink);
+
+        return consultationRepo.save(consultationEntity);
+    }
 }

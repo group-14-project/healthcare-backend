@@ -18,11 +18,9 @@ import java.util.Date;
 public class ReportEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private int id;
+  private Integer id;
   @Lob
-    private byte[] recordingLink;
-  @Lob
-    private byte[] prescription;
+    private byte[] reportLink;
   @Temporal(TemporalType.TIMESTAMP)
   private Date myDate;
   private boolean consent;

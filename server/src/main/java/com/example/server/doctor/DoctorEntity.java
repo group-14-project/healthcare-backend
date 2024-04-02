@@ -30,23 +30,14 @@ public class DoctorEntity {
 
     @NonNull
     private String email;
-
     private String password;
-
     private String registrationId;
-
     private String degree;
-
     private Long phoneNumber;
-
     private Integer activeStatus;
-
     private String otp;
-
     private LocalDateTime otpGeneratedTime;
-
     private Role role;
-
     @ManyToOne
     @JoinColumn(name = "hospital_specialization_id")
     private HospitalSpecializationEntity hospitalSpecialization;

@@ -57,4 +57,5 @@ public class PatientEntity{
 
     @OneToMany(mappedBy = "pat")
     private List<ReportEntity> report;
+
 }
