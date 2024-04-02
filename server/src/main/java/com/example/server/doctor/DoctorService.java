@@ -2,12 +2,14 @@ package com.example.server.doctor;
 
 import com.example.server.emailOtpPassword.EmailSender;
 import com.example.server.emailOtpPassword.PasswordUtil;
+import com.example.server.hospitalSpecialization.HospitalSpecializationEntity;
 import com.example.server.patient.PatientService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class DoctorService {
@@ -99,5 +101,9 @@ public class DoctorService {
         return doctorRepository.save(doctor);
     }
 
+    //to get the doctors of same department
+    public List<String> getDoctorsFromSameSpecialization(HospitalSpecializationEntity hospitalSpecialization) {
+        return doctorRepository.findNamesByHospitalSpecialization(hospitalSpecialization);
+    }
 
 }

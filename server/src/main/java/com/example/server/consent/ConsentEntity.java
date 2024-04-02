@@ -15,7 +15,8 @@ import lombok.NoArgsConstructor;
 public class ConsentEntity {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private int id;
+        private Integer id;
+
         private boolean seniorDoctorConsent;
         private boolean patientConsent;
 
