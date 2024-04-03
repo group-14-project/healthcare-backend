@@ -73,7 +73,7 @@ public class HospitalController
     ResponseEntity<ApiResponse> addDoctor(@RequestBody DoctorDto doctor)
     {
         HospitalSpecializationEntity hsc=hospitalSpecialization.getDoctorSpecialization(doctor);
-        DoctorEntity doc=doctorService.registerNewDoctor(doctor.getFirstName(),doctor.getLastName(),doctor.getDoctorEmail(),doctor.getRegistrationId());
+        DoctorEntity doc=doctorService.registerNewDoctor(doctor.getFirstName(),doctor.getLastName(),doctor.getDoctorEmail(),doctor.getRegistrationId(), doctor.getDegree(), doctor.getPhoneNumber());
         doc.setHospitalSpecialization(hsc);
         doctorRepository.save(doc);
         return new ResponseEntity<>(new ApiResponse("Doctor added successfully",true),HttpStatus.OK);

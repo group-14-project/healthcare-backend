@@ -45,7 +45,7 @@ public class DoctorService {
         return doctorRepository.findDoctorEntitiesByEmail(email);
     }
 
-    public DoctorEntity registerNewDoctor(String firstName, String lastName,  String email, String registrationId){
+    public DoctorEntity registerNewDoctor(String firstName, String lastName,  String email, String registrationId, String degree, Long phoneNumber){
         DoctorEntity doctor = doctorRepository.findDoctorEntitiesByEmail(email);
         if(doctor != null){
             throw new DoctorService.DoctorExists();
@@ -56,6 +56,8 @@ public class DoctorService {
         newDoctor.setLastName(lastName);
         newDoctor.setEmail(email);
         newDoctor.setRegistrationId(registrationId);
+        newDoctor.setDegree(degree);
+        newDoctor.setPhoneNumber(phoneNumber);
         String randomPassword = passwordUtil.generateRandomPassword();
         newDoctor.setPassword(bCryptPasswordEncoder.encode(randomPassword));
         doctorRepository.save(newDoctor);

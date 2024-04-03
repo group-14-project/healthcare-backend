@@ -33,7 +33,9 @@ public class HospitalSpecializationController {
                 body.getSpecialization().getDoctorFirstName(),
                 body.getSpecialization().getDoctorLastName(),
                 body.getSpecialization().getDoctorEmail(),
-                body.getSpecialization().getDoctorRegistrationId()
+                body.getSpecialization().getDoctorRegistrationId(),
+                body.getSpecialization().getDegree(),
+                body.getSpecialization().getPhoneNumber()
         );
         if (newDoctor == null) {
             throw new SrDoctorNotCreatedException();

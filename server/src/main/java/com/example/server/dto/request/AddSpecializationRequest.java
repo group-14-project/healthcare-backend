@@ -31,5 +31,11 @@ public class AddSpecializationRequest {
 
         @JsonProperty("doctorRegistrationId")
         private String doctorRegistrationId;
+
+        @JsonProperty("degree")
+        private String degree;
+
+        @JsonProperty("phoneNumber")
+        private Long phoneNumber;
     }
 }
