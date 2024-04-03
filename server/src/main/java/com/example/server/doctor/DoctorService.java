@@ -60,6 +60,7 @@ public class DoctorService {
         newDoctor.setPhoneNumber(phoneNumber);
         String randomPassword = passwordUtil.generateRandomPassword();
         newDoctor.setPassword(bCryptPasswordEncoder.encode(randomPassword));
+        newDoctor.setFirstTimeLogin(false);
         doctorRepository.save(newDoctor);
 
         emailSender.sendMailWithPassword(
