@@ -23,4 +23,7 @@ public interface ConsultationRepository extends JpaRepository<ConsultationEntity
 
     @Query("Select COUNT(c) FROM ConsultationEntity c WHERE c.connectionId IN :connectionEntities")
     Integer countAppointments(List<ConnectionEntity> connectionEntities);
+
+    @Query("select c.appointmentDateAndTime from ConsultationEntity c WHERE c.connectionId IN :connectionEntities")
+    List<LocalDateTime> findLocalDateTimeByConnectionId(List<ConnectionEntity> connectionEntities);
 }

@@ -71,6 +71,23 @@ public class ConsultationService {
         return countAppointment;
     }
 
+    public List<EachDayCount> sendEachDayCount(List<ConnectionEntity> connectionEntities){
+        List<LocalDateTime> localDateTimes = consultationRepo.findLocalDateTimeByConnectionId(connectionEntities);
+        List<LocalDate> dates = localDateTimes.stream()
+                .map(LocalDateTime::toLocalDate)
+                .collect(Collectors.toList());
+
+        Map<LocalDate, Long> dateCountMap = dates.stream()
+                .collect(Collectors.groupingBy(date -> date, Collectors.counting()));
+
+        List<EachDayCount> eachDayCounts = dateCountMap.entrySet().stream()
+                .map(entry -> new EachDayCount(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
+
+        return eachDayCounts;
+
+    }
+
 
 
 

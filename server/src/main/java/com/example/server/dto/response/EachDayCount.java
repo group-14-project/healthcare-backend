@@ -17,4 +17,9 @@ public class EachDayCount
 
     @JsonProperty("count")
     private Long count;
+
+    public EachDayCount(LocalDate key, Long value) {
+        this.date = key;
+        this.count = value;
+    }
 }

@@ -22,5 +22,4 @@ public class ServerApplication
         return new ModelMapper();
     }
 
-
 }

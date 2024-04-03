@@ -46,14 +46,14 @@ public class DoctorController {
         List<AppointmentDetailsDto> futureAppointmentDetails = consultation.findFutureAppointments(connectionEntities);
         Integer patientCount=connection.countPatient(newDoctor);
         Integer appointmentCount=consultation.countAppointments(connectionEntities);
-        //List<EachDayCount> eachDayCounts=consultation.eachDayAppointmentCount(connectionEntities);
+        List<EachDayCount> eachDayCounts=consultation.sendEachDayCount(connectionEntities);
         DoctorLoginResponse doctorLoginResponse=new DoctorLoginResponse();
         doctorLoginResponse.setFirstName(newDoctor.getFirstName());
         doctorLoginResponse.setLastName(newDoctor.getLastName());
         doctorLoginResponse.setDegree(newDoctor.getDegree());
         doctorLoginResponse.setFirstTimeLogin(newDoctor.isFirstTimeLogin());
         doctorLoginResponse.setRegistrationId(newDoctor.getRegistrationId());
-        //doctorLoginResponse.setEachDayCounts(eachDayCounts);
+        doctorLoginResponse.setEachDayCounts(eachDayCounts);
         doctorLoginResponse.setTotalAppointments(appointmentCount);
         doctorLoginResponse.setPastAppointmentDetails(pastAppointmentDetails);
         doctorLoginResponse.setFutureAppointmentDetails(futureAppointmentDetails);
