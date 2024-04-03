@@ -26,7 +26,6 @@ public class ConsultationService {
         newConsultation.setAppointmentDateAndTime(dateTime);
         newConsultation.setMainSymptom(symptom);
         newConsultation.setSecondarySymptom(secondarySymptoms);
-
         return consultationRepo.save(newConsultation);
     }
 
@@ -56,11 +55,14 @@ public class ConsultationService {
         AppointmentDetailsDto appointmentDetailsDto = new AppointmentDetailsDto();
         appointmentDetailsDto.setAppointmentDateAndTime(consultationEntity.getAppointmentDateAndTime());
         appointmentDetailsDto.setPrescription(consultationEntity.getPrescription());
+        appointmentDetailsDto.setDoctorFirstName(consultationEntity.getConnectionId().getDoctor().getFirstName());
+        appointmentDetailsDto.setDoctorLastName(consultationEntity.getConnectionId().getDoctor().getLastName());
         appointmentDetailsDto.setDoctorEmail(consultationEntity.getConnectionId().getDoctor().getEmail());
         appointmentDetailsDto.setMainSymptom(consultationEntity.getMainSymptom());
         appointmentDetailsDto.setPatientEmail(consultationEntity.getConnectionId().getPatient().getEmail());
+        appointmentDetailsDto.setPatientFirstName(consultationEntity.getConnectionId().getPatient().getFirstName());
+        appointmentDetailsDto.setPatientLastName(consultationEntity.getConnectionId().getPatient().getLastName());
         appointmentDetailsDto.setRecordingLink(consultationEntity.getRecordingLink());
-
         return appointmentDetailsDto;
     }
 

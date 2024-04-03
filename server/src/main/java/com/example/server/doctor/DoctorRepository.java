@@ -1,5 +1,6 @@
 package com.example.server.doctor;
 
+import com.example.server.hospital.HospitalEntity;
 import com.example.server.hospitalSpecialization.HospitalSpecializationEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -14,4 +15,5 @@ public interface DoctorRepository extends JpaRepository<DoctorEntity, Integer> {
     @Query("select concat(d.firstName, ' ', d.lastName) from DoctorEntity d " +
     "WHERE d.hospitalSpecialization = :hospitalSpecialization")
     List<String> findNamesByHospitalSpecialization(HospitalSpecializationEntity hospitalSpecialization);
+
 }

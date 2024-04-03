@@ -5,6 +5,7 @@ import com.example.server.doctor.DoctorEntity;
 import com.example.server.doctor.DoctorRepository;
 import com.example.server.dto.request.DoctorDto;
 import com.example.server.dto.request.LoginUserRequest;
+import com.example.server.dto.response.DoctorDetailsResponse;
 import com.example.server.hospitalSpecialization.HospitalSpecializationEntity;
 import com.example.server.hospitalSpecialization.HospitalSpecializationRepository;
 import com.example.server.patient.PatientService;
@@ -17,6 +18,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class HospitalService {
@@ -30,6 +33,8 @@ public class HospitalService {
 
     private final DoctorRepository doctorRepository;
     private final HospitalSpecializationRepository hospitalSpecializationRepository;
+
+
 
     public static class HospitalNotFoundException extends SecurityException{
         public HospitalNotFoundException(){
@@ -64,11 +69,12 @@ public class HospitalService {
     }
 
 
-    public void updatePassword(LoginUserRequest data)
+    public HospitalEntity updatePassword(LoginUserRequest data)
     {
         HospitalEntity hospital = this.hospitalRepository.findByEmail(data.getUser().getEmail());
         hospital.setPassword(bCryptPasswordEncoder.encode(data.getUser().getPassword()));
-        this.hospitalRepository.save(hospital);
+        hospital.setFirstTimeLogin(true);
+        return this.hospitalRepository.save(hospital);
     }
 
 
@@ -96,12 +102,33 @@ public class HospitalService {
         return hospitalRepository.save(hospital);
     }
 
-
-
-
     public static class InvalidCredentialsException extends RuntimeException {
         public InvalidCredentialsException(String message) {
             super(message);
         }
     }
+
+    public List<DoctorDetailsResponse> allDoctorsOfHospital(HospitalEntity hospital)
+    {
+        List<DoctorEntity> doctorEntities = doctorRepository.findAll();
+        return doctorEntities.stream()
+                .filter(doctor -> doctor.getHospitalSpecialization() != null && doctor.getHospitalSpecialization().getHospital().getHospitalName().equals(hospital.getHospitalName()))
+                .map(this::mapToDoctorDetails)
+                .collect(Collectors.toList());
+    }
+
+    private DoctorDetailsResponse mapToDoctorDetails(DoctorEntity doctorEntity)
+    {
+        DoctorDetailsResponse doctorDetailsResponse=new DoctorDetailsResponse();
+        doctorDetailsResponse.setDoctorEmail(doctorEntity.getEmail());
+        doctorDetailsResponse.setHospitalName(doctorEntity.getHospitalSpecialization().getHospital().getHospitalName());
+        doctorDetailsResponse.setFirstName(doctorEntity.getFirstName());
+        doctorDetailsResponse.setLastName(doctorEntity.getLastName());
+        doctorDetailsResponse.setImageUrl(doctorEntity.getImageUrl());
+        doctorDetailsResponse.setDegree(doctorEntity.getDegree());
+        doctorDetailsResponse.setSpecialization(doctorEntity.getHospitalSpecialization().getSpecialization().getName());
+        return doctorDetailsResponse;
+    }
+
+
 }

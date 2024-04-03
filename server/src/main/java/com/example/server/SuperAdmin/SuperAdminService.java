@@ -53,6 +53,7 @@ public class SuperAdminService
         String randomPassword=passwordUtil.generateRandomPassword();
         hospital.setPassword(bCryptPasswordEncoder.encode(randomPassword));
         //getting the password from the response and encoding it and setting it in the hospital
+        hospital.setFirstTimeLogin(false);
         HospitalEntity savedHospital = hospitalRepo.save(hospital);
         //saving the hospital
         response.setHospitalName(savedHospital.getHospitalName());
