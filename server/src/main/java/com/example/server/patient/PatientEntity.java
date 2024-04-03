@@ -46,6 +46,8 @@ public class PatientEntity{
 
     private boolean emailVerify;
 
+    private boolean firstTimeLogin;
+
     private String otp;
 
     private LocalDateTime otpGeneratedTime;
@@ -57,5 +59,4 @@ public class PatientEntity{
 
     @OneToMany(mappedBy = "pat")
     private List<ReportEntity> report;
-
 }

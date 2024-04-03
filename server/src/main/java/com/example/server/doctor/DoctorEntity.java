@@ -38,6 +38,7 @@ public class DoctorEntity {
     private String otp;
     private LocalDateTime otpGeneratedTime;
     private Role role;
+    private String imageUrl;
     @ManyToOne
     @JoinColumn(name = "hospital_specialization_id")
     private HospitalSpecializationEntity hospitalSpecialization;

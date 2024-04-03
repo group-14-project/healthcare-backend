@@ -24,4 +24,7 @@ public class DoctorDetailsResponse {
 
     @JsonProperty("degree")
     private String degree;
+
+    @JsonProperty("imageUrl")
+    private String imageUrl;
 }

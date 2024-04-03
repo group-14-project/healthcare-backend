@@ -124,6 +124,7 @@ public class DoctorService {
         doctorDetailsResponse.setSpecialization(doctorEntity.getHospitalSpecialization().getSpecialization().getName());
         doctorDetailsResponse.setDoctorEmail(doctorEntity.getEmail());
         doctorDetailsResponse.setDegree(doctorEntity.getDegree());
+        doctorDetailsResponse.setImageUrl(doctorEntity.getImageUrl());
         return doctorDetailsResponse;
     }
 

@@ -2,36 +2,45 @@ package com.example.server.dto.response;
 
 import com.example.server.patient.PatientEntity;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.*;
 
-@Getter
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Data
+@AllArgsConstructor
 public class PatientResponse {
-    @JsonProperty("patient")
-    private final Patient patient;
-
-    @Getter
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class Patient{
         @JsonProperty("email")
         private final String email;
 
-        @JsonProperty("token")
-        private final String token;
+        @JsonProperty("firstName")
+        private final String firstName;
 
-        @JsonProperty("name")
-        private String name;
-    }
+        @JsonProperty("lastName")
+        private String lastName;
 
-    public static PatientResponse fromPatientEntity(PatientEntity patientEntity, String token){
-        return new PatientResponse(
-                new Patient(
-                        patientEntity.getEmail(),
-                        token,
-                        patientEntity.getFirstName()
-                )
-        );
-    }
+        @JsonProperty("height")
+        private String height;
+
+        @JsonProperty("weight")
+        private String weight;
+
+        @JsonProperty("bloodGroup")
+        private String bloodGroup;
+
+        @JsonProperty("gender")
+        private String gender;
+
+        @JsonProperty("firstTimeLogin")
+        private boolean firstTimeLogin;
+
+
+
+
+//    public static PatientResponse fromPatientEntity(PatientEntity patientEntity, String token){
+//        return new PatientResponse(
+//                new Patient(
+//                        patientEntity.getEmail(),
+//                        token,
+//                        patientEntity.getFirstName()
+//                )
+//        );
+//    }
 }

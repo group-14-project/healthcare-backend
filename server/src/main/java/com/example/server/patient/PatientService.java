@@ -88,6 +88,7 @@ public class PatientService {
         newPatient.setEmail(email);
         newPatient.setPassword(bCryptPasswordEncoder.encode(password));
         newPatient.setOtp(otp);
+        newPatient.setFirstTimeLogin(false);
         newPatient.setOtpGeneratedTime(LocalDateTime.now());
 
         return patientRepo.save(newPatient);

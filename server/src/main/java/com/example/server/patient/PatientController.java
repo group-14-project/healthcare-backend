@@ -35,14 +35,22 @@ public class   PatientController {
         public UnexpectedErrorException(){ super("Unexpected Error Occured");}
     }
 
-    @PostMapping("/login")
-    ResponseEntity<PatientResponse> loginPatient(@RequestBody VerifyEmailRequest body){
-        PatientEntity newPatient = patient.verifyPatient(
-                body.getUser().getEmail(),
-                body.getUser().getOtp()
-        );
-        return ResponseEntity.ok(converter.entityToResponse(newPatient));
-    }
+//    @PostMapping("/login")
+//    ResponseEntity<PatientResponse> loginPatient(@RequestBody VerifyEmailRequest body){
+//        PatientEntity newPatient = patient.verifyPatient(
+//                body.getUser().getEmail(),
+//                body.getUser().getOtp()
+//        );
+//
+//        PatientResponse patientResponse = new PatientResponse(
+//                newPatient.getEmail(), newPatient.getFirstName(), newPatient.getLastName(), newPatient.getHeight(), newPatient.getBloodGroup(),
+//                newPatient.getGender(), newPatient.isFirstTimeLogin());
+//        );
+//
+//
+//
+//        return ResponseEntity.ok(converter.entityToResponse(newPatient));
+//    }
 
     @PostMapping("/signup")
     ResponseEntity<Void> registerPatient(@RequestBody VerifyEmailRequest body){
