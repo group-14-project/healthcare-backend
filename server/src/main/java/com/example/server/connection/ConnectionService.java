@@ -7,6 +7,8 @@ import com.example.server.patient.PatientEntity;
 import com.example.server.patient.PatientService;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class ConnectionService {
     private final ConnectionRepository connectionRepo;
@@ -43,5 +45,10 @@ public class ConnectionService {
             throw new PatientController.UnexpectedErrorException();
         }
         return connectionEntity;
+    }
+
+    public List<ConnectionEntity> findAllConnections(PatientEntity newPatient) {
+        List<ConnectionEntity> connectionEntities = connectionRepo.findByPatient(newPatient);
+        return connectionEntities;
     }
 }

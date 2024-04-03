@@ -30,9 +30,9 @@ public class PatientEntity{
 
     private Long phoneNumber;
 
-    private Float height;
+    private String height;
 
-    private Float weight;
+    private String weight;
 
     private String bloodGroup;
 

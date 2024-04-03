@@ -1,16 +1,22 @@
 package com.example.server.patient;
 
+import com.example.server.connection.ConnectionEntity;
+import com.example.server.connection.ConnectionService;
+import com.example.server.consultation.ConsultationService;
 import com.example.server.converter.PatientObjectConverter;
 import com.example.server.dto.request.LoginUserRequest;
 import com.example.server.dto.request.PatientDetailsRequest;
 import com.example.server.dto.request.SignupPatientRequest;
 import com.example.server.dto.request.VerifyEmailRequest;
 import com.example.server.dto.response.ApiResponse;
+import com.example.server.dto.response.AppointmentDetailsDto;
 import com.example.server.dto.response.PatientResponse;
 import com.example.server.emailOtpPassword.EmailSender;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/patient")
@@ -19,12 +25,19 @@ public class   PatientController {
     private final PatientService patient;
 
     private final EmailSender emailSender;
-    private final PatientObjectConverter converter;
 
-    public PatientController(PatientService patient, PatientObjectConverter converter, EmailSender emailSender){
+    //private final PatientObjectConverter converter;
+
+    private final ConnectionService connection;
+
+    private final ConsultationService consultation;
+
+    public PatientController(PatientService patient, PatientObjectConverter converter, EmailSender emailSender, ConnectionService connection, ConsultationService consultation){
         this.patient = patient;
-        this.converter = converter;
+       // this.converter = converter;
         this.emailSender = emailSender;
+        this.connection = connection;
+        this.consultation = consultation;
     }
 
     public static class PatientVerifiedException extends SecurityException{
@@ -35,22 +48,23 @@ public class   PatientController {
         public UnexpectedErrorException(){ super("Unexpected Error Occured");}
     }
 
-//    @PostMapping("/login")
-//    ResponseEntity<PatientResponse> loginPatient(@RequestBody VerifyEmailRequest body){
-//        PatientEntity newPatient = patient.verifyPatient(
-//                body.getUser().getEmail(),
-//                body.getUser().getOtp()
-//        );
-//
-//        PatientResponse patientResponse = new PatientResponse(
-//                newPatient.getEmail(), newPatient.getFirstName(), newPatient.getLastName(), newPatient.getHeight(), newPatient.getBloodGroup(),
-//                newPatient.getGender(), newPatient.isFirstTimeLogin());
-//        );
-//
-//
-//
-//        return ResponseEntity.ok(converter.entityToResponse(newPatient));
-//    }
+    @PostMapping("/login")
+    ResponseEntity<PatientResponse> loginPatient(@RequestBody VerifyEmailRequest body){
+        PatientEntity newPatient = patient.verifyPatient(
+                body.getUser().getEmail(),
+                body.getUser().getOtp()
+        );
+
+        List<ConnectionEntity> connectionEntities = connection.findAllConnections(newPatient);
+        List<AppointmentDetailsDto> pastAppointmentDetails = consultation.findPastAppointmentsByPatient(connectionEntities);
+        List<AppointmentDetailsDto> futureAppointmentDetails = consultation.findFutureAppointmentsByPatient(connectionEntities);
+
+        PatientResponse patientResponse = new PatientResponse(
+                newPatient.getEmail(), newPatient.getFirstName(), newPatient.getLastName(), newPatient.getHeight(), newPatient.getWeight(), newPatient.getBloodGroup(),
+                newPatient.getGender(), newPatient.isFirstTimeLogin(), pastAppointmentDetails, futureAppointmentDetails);
+
+        return ResponseEntity.ok(patientResponse);
+    }
 
     @PostMapping("/signup")
     ResponseEntity<Void> registerPatient(@RequestBody VerifyEmailRequest body){
@@ -127,13 +141,21 @@ public class   PatientController {
     }
 
     @PutMapping("/updateDetail")
-    public ResponseEntity<ApiResponse> updateDetail(@RequestBody PatientDetailsRequest body)
+    public ResponseEntity<PatientResponse> updateDetail(@RequestBody PatientDetailsRequest body)
     {
         if(!patient.checkPatient(body.getEmail()))
         {
             throw new PatientService.PatientNotFoundException();
         }
-        patient.updateDetails(body);
-        return new ResponseEntity<>(new ApiResponse("Details updated successfully",true),HttpStatus.OK);
+        PatientEntity newPatient = patient.updateDetails(body);
+        List<ConnectionEntity> connectionEntities = connection.findAllConnections(newPatient);
+        List<AppointmentDetailsDto> pastAppointmentDetails = consultation.findPastAppointmentsByPatient(connectionEntities);
+        List<AppointmentDetailsDto> futureAppointmentDetails = consultation.findFutureAppointmentsByPatient(connectionEntities);
+
+        PatientResponse patientResponse = new PatientResponse(
+                newPatient.getEmail(), newPatient.getFirstName(), newPatient.getLastName(), newPatient.getHeight(), newPatient.getWeight(), newPatient.getBloodGroup(),
+                newPatient.getGender(), newPatient.isFirstTimeLogin(), pastAppointmentDetails, futureAppointmentDetails);
+
+        return ResponseEntity.ok(patientResponse);
     }
 }

@@ -145,17 +145,16 @@ public class PatientService {
         return patient;
     }
 
-    public  void updateDetails(PatientDetailsRequest body)
+    public  PatientEntity updateDetails(PatientDetailsRequest body)
     {
         PatientEntity patient=patientRepo.findPatientEntitiesByEmail(body.getEmail());
-       patient.setFirstName(body.getFirstName());
-       patient.setLastName(body.getLastName());
        patient.setPhoneNumber(body.getPhoneNumber());
        patient.setHeight(body.getWeight());
        patient.setBloodGroup(body.getBloodGroup());
        patient.setGender(body.getGender());
        patient.setAddress(body.getAddress());
        patient.setPinCode(body.getPinCode());
-       patientRepo.save(patient);
+       patient.setFirstTimeLogin(true);
+       return patientRepo.save(patient);
     }
 }

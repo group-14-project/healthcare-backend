@@ -4,6 +4,8 @@ import com.example.server.patient.PatientEntity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 public class PatientResponse {
@@ -31,6 +33,11 @@ public class PatientResponse {
         @JsonProperty("firstTimeLogin")
         private boolean firstTimeLogin;
 
+        @JsonProperty("pastAppointments")
+        private List<AppointmentDetailsDto> pastAppointmentDetails;
+
+        @JsonProperty("futureAppointments")
+        private List<AppointmentDetailsDto> futureAppointmentDetails;
 
 
 
