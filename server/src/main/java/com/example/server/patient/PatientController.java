@@ -8,7 +8,6 @@ import com.example.server.dto.request.LoginUserRequest;
 import com.example.server.dto.request.PatientDetailsRequest;
 import com.example.server.dto.request.SignupPatientRequest;
 import com.example.server.dto.request.VerifyEmailRequest;
-import com.example.server.dto.response.ApiResponse;
 import com.example.server.dto.response.AppointmentDetailsDto;
 import com.example.server.dto.response.PatientResponse;
 import com.example.server.emailOtpPassword.EmailSender;
@@ -56,8 +55,8 @@ public class   PatientController {
         );
 
         List<ConnectionEntity> connectionEntities = connection.findAllConnections(newPatient);
-        List<AppointmentDetailsDto> pastAppointmentDetails = consultation.findPastAppointmentsByPatient(connectionEntities);
-        List<AppointmentDetailsDto> futureAppointmentDetails = consultation.findFutureAppointmentsByPatient(connectionEntities);
+        List<AppointmentDetailsDto> pastAppointmentDetails = consultation.findPastAppointments(connectionEntities);
+        List<AppointmentDetailsDto> futureAppointmentDetails = consultation.findFutureAppointments(connectionEntities);
 
         PatientResponse patientResponse = new PatientResponse(
                 newPatient.getEmail(), newPatient.getFirstName(), newPatient.getLastName(), newPatient.getHeight(), newPatient.getWeight(), newPatient.getBloodGroup(),
@@ -149,8 +148,8 @@ public class   PatientController {
         }
         PatientEntity newPatient = patient.updateDetails(body);
         List<ConnectionEntity> connectionEntities = connection.findAllConnections(newPatient);
-        List<AppointmentDetailsDto> pastAppointmentDetails = consultation.findPastAppointmentsByPatient(connectionEntities);
-        List<AppointmentDetailsDto> futureAppointmentDetails = consultation.findFutureAppointmentsByPatient(connectionEntities);
+        List<AppointmentDetailsDto> pastAppointmentDetails = consultation.findPastAppointments(connectionEntities);
+        List<AppointmentDetailsDto> futureAppointmentDetails = consultation.findFutureAppointments(connectionEntities);
 
         PatientResponse patientResponse = new PatientResponse(
                 newPatient.getEmail(), newPatient.getFirstName(), newPatient.getLastName(), newPatient.getHeight(), newPatient.getWeight(), newPatient.getBloodGroup(),

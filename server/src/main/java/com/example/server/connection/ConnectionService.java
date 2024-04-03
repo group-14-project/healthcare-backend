@@ -51,4 +51,16 @@ public class ConnectionService {
         List<ConnectionEntity> connectionEntities = connectionRepo.findByPatient(newPatient);
         return connectionEntities;
     }
+
+    public List<ConnectionEntity> findAllConnectionsByDoctor(DoctorEntity newDoctor)
+    {
+        List<ConnectionEntity> connectionEntities=connectionRepo.findByDoctor(newDoctor);
+        return connectionEntities;
+    }
+
+    public Integer countPatient(DoctorEntity newDoctor)
+    {
+        Integer patientCount=connectionRepo.countByDoctor(newDoctor);
+        return patientCount;
+    }
 }

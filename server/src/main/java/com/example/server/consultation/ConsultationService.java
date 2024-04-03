@@ -2,11 +2,14 @@ package com.example.server.consultation;
 
 import com.example.server.connection.ConnectionEntity;
 import com.example.server.dto.response.AppointmentDetailsDto;
+import com.example.server.dto.response.EachDayCount;
 import com.example.server.patient.PatientController;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,14 +38,14 @@ public class ConsultationService {
         return consultationRepo.save(consultationEntity);
     }
 
-    public List<AppointmentDetailsDto> findPastAppointmentsByPatient(List<ConnectionEntity> connectionEntities) {
+    public List<AppointmentDetailsDto> findPastAppointments(List<ConnectionEntity> connectionEntities) {
         LocalDateTime currentTime = LocalDateTime.now();
         List<ConsultationEntity>  consultationEntities = consultationRepo.findAllbyPast(connectionEntities, currentTime);
         return consultationEntities.stream()
                 .map(this::mapToAppointmentDetails).collect(Collectors.toList());
     }
 
-    public List<AppointmentDetailsDto> findFutureAppointmentsByPatient(List<ConnectionEntity> connectionEntities) {
+    public List<AppointmentDetailsDto> findFutureAppointments(List<ConnectionEntity> connectionEntities) {
         LocalDateTime currentTime = LocalDateTime.now();
         List<ConsultationEntity>  consultationEntities = consultationRepo.findAllbyFuture(connectionEntities, currentTime);
         return consultationEntities.stream()
@@ -60,6 +63,15 @@ public class ConsultationService {
 
         return appointmentDetailsDto;
     }
+
+
+    public Integer countAppointments(List<ConnectionEntity> connectionEntities)
+    {
+        Integer countAppointment =consultationRepo.countAppointments(connectionEntities);
+        return countAppointment;
+    }
+
+
 
 
 }

@@ -1,8 +1,10 @@
 package com.example.server.connection;
 
 import com.example.server.doctor.DoctorEntity;
+import com.example.server.dto.response.EachDayCount;
 import com.example.server.patient.PatientEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -12,4 +14,11 @@ public interface ConnectionRepository extends JpaRepository<ConnectionEntity, In
     ConnectionEntity findByDoctorAndPatient(DoctorEntity doctor, PatientEntity patient);
 
     List<ConnectionEntity> findByPatient(PatientEntity newPatient);
+
+    List<ConnectionEntity> findByDoctor(DoctorEntity newDoctor);
+
+    @Query("SELECT COUNT(c) FROM ConnectionEntity c WHERE c.doctor = :doctor")
+    Integer countByDoctor(DoctorEntity doctor);
+
+
 }
