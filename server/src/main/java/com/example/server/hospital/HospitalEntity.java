@@ -34,6 +34,8 @@ public class HospitalEntity {
 
     private String otp;
 
+    private boolean firstTimeLogin;
+
     private LocalDateTime otpGeneratedTime;
 
     private boolean emailVerify;

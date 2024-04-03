@@ -10,8 +10,20 @@ public class AppointmentDetailsDto {
     @JsonProperty("patientEmail")
     private String patientEmail;
 
+    @JsonProperty("patientFirstName")
+    private String patientFirstName;
+
+    @JsonProperty("patientLastName")
+    private String patientLastName;
+
     @JsonProperty("doctorEmail")
     private String doctorEmail;
+
+    @JsonProperty("doctorFirstName")
+    private String doctorFirstName;
+
+    @JsonProperty("doctorLastName")
+    private String doctorLastName;
 
     @JsonProperty("mainSymptom")
     private String mainSymptom;
