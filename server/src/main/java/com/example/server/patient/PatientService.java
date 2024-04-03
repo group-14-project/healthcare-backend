@@ -132,7 +132,7 @@ public class PatientService {
 
     public void passwordChange(String password, String email){
         PatientEntity patient = patientRepo.findPatientEntitiesByEmail(email);
-        patient.setPassword(password);
+        patient.setPassword(bCryptPasswordEncoder.encode(password));
         patientRepo.save(patient);
     }
 

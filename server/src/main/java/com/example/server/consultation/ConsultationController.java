@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/consultation")
+@CrossOrigin
 public class ConsultationController {
     private final ConsultationService consultation;
 

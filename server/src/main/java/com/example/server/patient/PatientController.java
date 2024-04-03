@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/patient")
 @CrossOrigin
-public class PatientController {
+public class   PatientController {
     private final PatientService patient;
 
     private final EmailSender emailSender;
@@ -54,7 +54,7 @@ public class PatientController {
     }
 
     @PostMapping("/loginotp")
-    ResponseEntity<Void> loginPatientemail(@RequestBody LoginUserRequest body){
+    ResponseEntity<Void> loginPatientEmail(@RequestBody LoginUserRequest body){
         if(!patient.checkPatient(body.getUser().getEmail())){
             throw new PatientService.PatientNotFoundException();
         }
@@ -117,6 +117,7 @@ public class PatientController {
         );
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
     @PutMapping("/updateDetail")
     public ResponseEntity<ApiResponse> updateDetail(@RequestBody PatientDetailsRequest body)
     {

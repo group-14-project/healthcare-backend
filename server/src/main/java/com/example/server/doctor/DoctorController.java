@@ -4,10 +4,12 @@ import com.example.server.dto.request.EmailRequest;
 import com.example.server.dto.request.LoginUserRequest;
 import com.example.server.dto.request.VerifyEmailRequest;
 import com.example.server.dto.response.DepartmentDto;
+import com.example.server.dto.response.DoctorDetailsResponse;
 import com.example.server.emailOtpPassword.EmailSender;
 import com.example.server.hospitalSpecialization.HospitalSpecializationEntity;
 import com.example.server.patient.PatientController;
 import com.example.server.patient.PatientService;
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -69,6 +71,17 @@ public class DoctorController {
         DepartmentDto departmentDto = new DepartmentDto(headDoctorName, currSpecialization, doctors);
         return ResponseEntity.ok(departmentDto);
     }
+//TODO: send details of all patients of a doctor and all doctros to send consent
+//    @GetMapping("/viewPatientsAndDoctors")
+//    public ResponseEntity<Void> getPatientsDoctors(@ResponseBody EmailRequest emailRequest){
+//        DoctorEntity mainDoctor = doctor.findDoctorByEmail(emailRequest.getEmail());
+//
+//    }
 
+    @GetMapping("/landingPage")
+    public ResponseEntity<List<DoctorDetailsResponse>> getDoctorDetails(){
+        List<DoctorDetailsResponse> doctorDetailsResponses = doctor.getAllDoctorDetails();
+        return ResponseEntity.ok(doctorDetailsResponses);
+    }
 
 }

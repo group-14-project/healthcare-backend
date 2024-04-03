@@ -1,5 +1,6 @@
 package com.example.server.doctor;
 
+import com.example.server.dto.response.DoctorDetailsResponse;
 import com.example.server.emailOtpPassword.EmailSender;
 import com.example.server.emailOtpPassword.PasswordUtil;
 import com.example.server.hospitalSpecialization.HospitalSpecializationEntity;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class DoctorService {
@@ -31,6 +33,7 @@ public class DoctorService {
     public void addDoctor(DoctorEntity newDoctor) {
         doctorRepository.save(newDoctor);
     }
+
 
     public static class DoctorExists extends SecurityException{
         public DoctorExists(){
@@ -104,6 +107,24 @@ public class DoctorService {
     //to get the doctors of same department
     public List<String> getDoctorsFromSameSpecialization(HospitalSpecializationEntity hospitalSpecialization) {
         return doctorRepository.findNamesByHospitalSpecialization(hospitalSpecialization);
+    }
+
+    public List<DoctorDetailsResponse> getAllDoctorDetails() {
+        List<DoctorEntity> allDoctors = doctorRepository.findAll();
+        return allDoctors.stream()
+                .map(this::mapToDoctorDetailsResponse)
+                .collect(Collectors.toList());
+    }
+
+    private DoctorDetailsResponse mapToDoctorDetailsResponse(DoctorEntity doctorEntity) {
+        DoctorDetailsResponse doctorDetailsResponse = new DoctorDetailsResponse();
+        doctorDetailsResponse.setFirstName(doctorEntity.getFirstName());
+        doctorDetailsResponse.setLastName(doctorEntity.getLastName());
+        doctorDetailsResponse.setHospitalName(doctorEntity.getHospitalSpecialization().getHospital().getHospitalName());
+        doctorDetailsResponse.setSpecialization(doctorEntity.getHospitalSpecialization().getSpecialization().getName());
+        doctorDetailsResponse.setDoctorEmail(doctorEntity.getEmail());
+        doctorDetailsResponse.setDegree(doctorEntity.getDegree());
+        return doctorDetailsResponse;
     }
 
 }
