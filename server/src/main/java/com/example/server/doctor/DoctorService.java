@@ -1,6 +1,7 @@
 package com.example.server.doctor;
 
 import com.example.server.dto.response.DoctorDetailsResponse;
+import com.example.server.dto.response.DoctorStatus;
 import com.example.server.emailOtpPassword.EmailSender;
 import com.example.server.emailOtpPassword.PasswordUtil;
 import com.example.server.hospitalSpecialization.HospitalSpecializationEntity;
@@ -129,6 +130,24 @@ public class DoctorService {
         doctorDetailsResponse.setDegree(doctorEntity.getDegree());
         doctorDetailsResponse.setImageUrl(doctorEntity.getImageUrl());
         return doctorDetailsResponse;
+    }
+
+    public List<DoctorStatus> getDoctorStatus() {
+        List<DoctorEntity> doctors = doctorRepository.findAll();
+        return doctors.stream()
+                .map(this::mapToDoctorStatus)
+                .collect(Collectors.toList());
+    }
+
+    private DoctorStatus mapToDoctorStatus(DoctorEntity doctorEntity) {
+        DoctorStatus doctorStatus = new DoctorStatus();
+        doctorStatus.setEmail(doctorEntity.getEmail());
+        doctorStatus.setDegree(doctorEntity.getDegree());
+        doctorStatus.setHospitalName(doctorEntity.getHospitalSpecialization().getHospital().getHospitalName());
+        doctorStatus.setFirstName(doctorEntity.getFirstName());
+        doctorStatus.setLastName(doctorEntity.getLastName());
+        doctorStatus.setStatus(doctorEntity.getActiveStatus() == 1 ? "Active" : "Inactive");
+        return doctorStatus;
     }
 
 }
