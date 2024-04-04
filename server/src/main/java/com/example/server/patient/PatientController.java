@@ -123,7 +123,7 @@ public class   PatientController {
     }
 
 
-    @PostMapping("/DetailsAdd")
+    @PostMapping("/detailsAdd")
     ResponseEntity<PatientDetailsRequest> DetailsAdd(@RequestBody PatientDetailsRequest patientDto)
     {
         PatientDetailsRequest details=this.patient.DetailsAdd(patientDto);
