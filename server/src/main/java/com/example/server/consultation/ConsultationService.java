@@ -91,7 +91,7 @@ public class ConsultationService {
                 .map(entry -> new EachDayCount(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
 
-        Collections.sort(eachDayCounts, Comparator.comparing(EachDayCount::getDate).reversed());
+        Collections.sort(eachDayCounts, Comparator.comparing(EachDayCount::getDate));
 
         return eachDayCounts;
 

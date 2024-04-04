@@ -108,4 +108,7 @@ public class DoctorController {
         return ResponseEntity.ok(doctorDetailsResponses);
     }
 
+//    @GetMapping("/getPatientsAndAllDoctors")
+//    public ResponseEntity<PatientHospitalBranchDoctorResponse>
+
 }
