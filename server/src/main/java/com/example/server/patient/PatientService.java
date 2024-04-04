@@ -149,7 +149,8 @@ public class PatientService {
     {
         PatientEntity patient=patientRepo.findPatientEntitiesByEmail(body.getEmail());
        patient.setPhoneNumber(body.getPhoneNumber());
-       patient.setHeight(body.getWeight());
+       patient.setWeight(body.getWeight());
+       patient.setHeight(body.getHeight());
        patient.setBloodGroup(body.getBloodGroup());
        patient.setGender(body.getGender());
        patient.setAddress(body.getAddress());
