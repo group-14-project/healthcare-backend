@@ -3,7 +3,9 @@ package com.example.server.consultation;
 import com.example.server.connection.ConnectionEntity;
 import com.example.server.dto.response.AppointmentDetailsDto;
 import com.example.server.dto.response.EachDayCount;
+import com.example.server.emailOtpPassword.EmailSender;
 import com.example.server.patient.PatientController;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -15,9 +17,10 @@ import java.util.stream.Collectors;
 @Service
 public class ConsultationService {
     private final ConsultationRepository consultationRepo;
-
-    public ConsultationService(ConsultationRepository consultationRepo) {
+    private final EmailSender emailSender;
+    public ConsultationService(ConsultationRepository consultationRepo, EmailSender emailSender) {
         this.consultationRepo = consultationRepo;
+        this.emailSender = emailSender;
     }
 
     public ConsultationEntity addConsultation( String symptom, String secondarySymptoms, ConnectionEntity connection, LocalDateTime dateTime){
@@ -90,7 +93,19 @@ public class ConsultationService {
 
     }
 
-
+    //TODO: make the timing every 1 hr
+    @Scheduled(fixedRate = 60000)
+    public void sendAppointmentReminders() {
+        LocalDateTime currentTime = LocalDateTime.now();
+        LocalDateTime reminderTime = currentTime.plusMinutes(46);
+        List<ConsultationEntity> consultations = consultationRepo.getByAppointmentDateAndTime(currentTime, reminderTime);
+        for (ConsultationEntity consultation : consultations) {
+            emailSender.sendReminderEmail(consultation.getConnectionId().getPatient().getEmail(),
+                    consultation.getConnectionId().getPatient().getFirstName(), consultation.getConnectionId().getDoctor().getFirstName(), consultation.getAppointmentDateAndTime());
+            emailSender.sendReminderEmail(consultation.getConnectionId().getDoctor().getEmail(),
+                    consultation.getConnectionId().getDoctor().getFirstName(), consultation.getConnectionId().getPatient().getFirstName(), consultation.getAppointmentDateAndTime());
+        }
+    }
 
 
 }
