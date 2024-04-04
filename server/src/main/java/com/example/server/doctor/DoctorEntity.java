@@ -50,6 +50,6 @@ public class DoctorEntity {
     @OneToMany(mappedBy = "doctor")
     private List<ConnectionEntity> connection;
 
-    @OneToMany(mappedBy = "doct")
+    @OneToMany(mappedBy = "newDoctor")
     private List<ConsentEntity> consent;
 }

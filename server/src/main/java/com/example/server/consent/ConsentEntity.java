@@ -26,5 +26,5 @@ public class ConsentEntity {
 
         @ManyToOne
         @JoinColumn(name = "doctorId")
-        private DoctorEntity doct;
+        private DoctorEntity newDoctor;
 }

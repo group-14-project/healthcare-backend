@@ -23,7 +23,7 @@ public class DoctorStatusScheduler {
         List<WebSocketSession> sessions = doctorStatusWebSocketHandler.getSessions();
         for (WebSocketSession session : sessions) {
             try {
-                doctorStatusWebSocketHandler.sendUpdates(session); // Send updates to each WebSocket session
+                doctorStatusWebSocketHandler.sendUpdates(session);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
