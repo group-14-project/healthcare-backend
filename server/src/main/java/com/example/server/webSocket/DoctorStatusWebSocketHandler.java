@@ -5,7 +5,6 @@ import com.example.server.dto.response.DoctorStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -57,10 +56,8 @@ public class DoctorStatusWebSocketHandler extends TextWebSocketHandler {
         System.out.println(
                 "per man info going"
         );
-        for (DoctorStatus doctorStatus : doctorStatusList) {
-            String jsonString = objectMapper.writeValueAsString(doctorStatus);
-            session.sendMessage(new TextMessage(jsonString)); // Send each DoctorStatus as a JSON string
-        }
+        String jsonString = objectMapper.writeValueAsString(doctorStatusList);
+        session.sendMessage(new TextMessage(jsonString));
     }
 
     @Override
