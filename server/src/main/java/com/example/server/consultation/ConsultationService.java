@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -88,6 +90,8 @@ public class ConsultationService {
         List<EachDayCount> eachDayCounts = dateCountMap.entrySet().stream()
                 .map(entry -> new EachDayCount(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
+
+        Collections.sort(eachDayCounts, Comparator.comparing(EachDayCount::getDate).reversed());
 
         return eachDayCounts;
 
