@@ -26,4 +26,9 @@ public interface ConsultationRepository extends JpaRepository<ConsultationEntity
 
     @Query("select c.appointmentDateAndTime from ConsultationEntity c WHERE c.connectionId IN :connectionEntities")
     List<LocalDateTime> findLocalDateTimeByConnectionId(List<ConnectionEntity> connectionEntities);
+
+    @Query("SELECT c FROM ConsultationEntity c WHERE c.appointmentDateAndTime " +
+            "BETWEEN :startTime AND :endTime")
+
+    List<ConsultationEntity> getByAppointmentDateAndTime(LocalDateTime startTime, LocalDateTime endTime);
 }
