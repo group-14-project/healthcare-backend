@@ -9,11 +9,14 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class PatientResponse {
+        @JsonProperty("patientId")
+        private  Integer patientId;
+
         @JsonProperty("email")
-        private final String email;
+        private  String email;
 
         @JsonProperty("firstName")
-        private final String firstName;
+        private  String firstName;
 
         @JsonProperty("lastName")
         private String lastName;

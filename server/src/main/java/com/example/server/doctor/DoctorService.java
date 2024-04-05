@@ -141,6 +141,7 @@ public class DoctorService {
 
     private DoctorStatus mapToDoctorStatus(DoctorEntity doctorEntity) {
         DoctorStatus doctorStatus = new DoctorStatus();
+        doctorStatus.setDoctorId(doctorEntity.getId());
         doctorStatus.setEmail(doctorEntity.getEmail());
         doctorStatus.setDegree(doctorEntity.getDegree());
         doctorStatus.setHospitalName(doctorEntity.getHospitalSpecialization().getHospital().getHospitalName());

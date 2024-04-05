@@ -28,7 +28,7 @@ public class DoctorController {
 
     private final ConsultationService consultation;
 
-    public DoctorController(DoctorService doctorService, DoctorService doctor, EmailSender emailSender, ConnectionService connection, ConsultationService consultation) {
+    public DoctorController(DoctorService doctor, EmailSender emailSender, ConnectionService connection, ConsultationService consultation) {
         this.doctor = doctor;
         this.emailSender = emailSender;
         this.connection = connection;
@@ -48,6 +48,7 @@ public class DoctorController {
         Integer appointmentCount=consultation.countAppointments(connectionEntities);
         List<EachDayCount> eachDayCounts=consultation.sendEachDayCount(connectionEntities);
         DoctorLoginResponse doctorLoginResponse=new DoctorLoginResponse();
+        doctorLoginResponse.setDoctorId(newDoctor.getId());
         doctorLoginResponse.setFirstName(newDoctor.getFirstName());
         doctorLoginResponse.setLastName(newDoctor.getLastName());
         doctorLoginResponse.setDegree(newDoctor.getDegree());
@@ -57,7 +58,7 @@ public class DoctorController {
         doctorLoginResponse.setTotalAppointments(appointmentCount);
         doctorLoginResponse.setPastAppointmentDetails(pastAppointmentDetails);
         doctorLoginResponse.setFutureAppointmentDetails(futureAppointmentDetails);
-       doctorLoginResponse.setTotalPatients(patientCount);
+        doctorLoginResponse.setTotalPatients(patientCount);
         return ResponseEntity.ok(doctorLoginResponse);
     }
 

@@ -10,6 +10,7 @@ import com.example.server.dto.request.SignupPatientRequest;
 import com.example.server.dto.request.VerifyEmailRequest;
 import com.example.server.dto.response.AppointmentDetailsDto;
 import com.example.server.dto.response.PatientResponse;
+import com.example.server.dto.response.PatientUpdateDetails;
 import com.example.server.emailOtpPassword.EmailSender;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -58,7 +59,7 @@ public class   PatientController {
         List<AppointmentDetailsDto> pastAppointmentDetails = consultation.findPastAppointments(connectionEntities);
         List<AppointmentDetailsDto> futureAppointmentDetails = consultation.findFutureAppointments(connectionEntities);
 
-        PatientResponse patientResponse = new PatientResponse(
+        PatientResponse patientResponse = new PatientResponse(newPatient.getId(),
                 newPatient.getEmail(), newPatient.getFirstName(), newPatient.getLastName(), newPatient.getHeight(), newPatient.getWeight(), newPatient.getBloodGroup(),
                 newPatient.getGender(), newPatient.isFirstTimeLogin(), pastAppointmentDetails, futureAppointmentDetails);
 
@@ -140,7 +141,7 @@ public class   PatientController {
     }
 
     @PutMapping("/updateDetail")
-    public ResponseEntity<PatientResponse> updateDetail(@RequestBody PatientDetailsRequest body)
+    public ResponseEntity<PatientUpdateDetails> updateDetail(@RequestBody PatientDetailsRequest body)
     {
         if(!patient.checkPatient(body.getEmail()))
         {
@@ -151,7 +152,7 @@ public class   PatientController {
         List<AppointmentDetailsDto> pastAppointmentDetails = consultation.findPastAppointments(connectionEntities);
         List<AppointmentDetailsDto> futureAppointmentDetails = consultation.findFutureAppointments(connectionEntities);
 
-        PatientResponse patientResponse = new PatientResponse(
+        PatientUpdateDetails patientResponse = new PatientUpdateDetails(
                 newPatient.getEmail(), newPatient.getFirstName(), newPatient.getLastName(), newPatient.getHeight(), newPatient.getWeight(), newPatient.getBloodGroup(),
                 newPatient.getGender(), newPatient.isFirstTimeLogin(), pastAppointmentDetails, futureAppointmentDetails);
 

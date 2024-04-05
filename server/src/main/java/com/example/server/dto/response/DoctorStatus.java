@@ -7,6 +7,7 @@ import java.io.IOException;
 
 @Data
 public class DoctorStatus {
+    private Integer doctorId;
     private String email;
     private String status;
     private String firstName;

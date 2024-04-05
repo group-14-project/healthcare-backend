@@ -6,6 +6,9 @@ import java.util.List;
 @Data
 public class DoctorLoginResponse
 {
+    @JsonProperty("doctorId")
+    private Integer doctorId;
+
     @JsonProperty("firstName")
     private String firstName;
 
