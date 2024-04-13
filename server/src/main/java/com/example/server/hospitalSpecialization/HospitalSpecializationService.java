@@ -29,6 +29,15 @@ public class HospitalSpecializationService {
         HospitalEntity hospitalEntity = hospitalService.hospitalDetails(hospitalEmail);
         DoctorEntity doctorEntity = doctorService.findDoctorByEmail(email);
 
+        if(specializationEntity==null || hospitalEntity==null || doctorEntity==null){
+            return null;
+        }
+
+        HospitalSpecializationEntity currSpecialization = hospitalSpecializationRepository.findByHospitalIdAndSpecializationId(hospitalEntity.getId(), specializationEntity.getId());
+        if(currSpecialization!=null){
+            return null;
+        }
+
         HospitalSpecializationEntity newSpecialization = new HospitalSpecializationEntity();
         newSpecialization.setSpecialization(specializationEntity);
         newSpecialization.setHospital(hospitalEntity);
@@ -36,19 +45,16 @@ public class HospitalSpecializationService {
 
         return hospitalSpecializationRepository.save(newSpecialization);
     }
-    public HospitalSpecializationEntity getDoctorSpecialization(DoctorDto doctor)
+    public HospitalSpecializationEntity getDoctorSpecialization(DoctorDto doctor, String email)
     {
-        HospitalEntity hospital=hospitalService.hospitalDetails(doctor.getHospitalEmail());
-        if(hospital==null)
-        {
-            throw new HospitalService.HospitalNotFoundException();
+        HospitalEntity hospital=hospitalService.hospitalDetails(email);
+        if(hospital==null) {
+            return null;
         }
         SpecializationEntity specialization=specializationService.getSpecializationId(doctor.getSpecialization());
-        if(specialization==null)
-        {
-            throw new SpecializationService.SpecializationNotFoundException();
+        if(specialization==null) {
+            return null;
         }
-        HospitalSpecializationEntity spec=hospitalSpecializationRepository.findByHospitalIdAndSpecializationId(hospital.getId(),specialization.getId());
-        return spec;
+        return hospitalSpecializationRepository.findByHospitalIdAndSpecializationId(hospital.getId(),specialization.getId());
     }
 }

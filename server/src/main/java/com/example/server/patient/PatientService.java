@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Service
 public class PatientService {
@@ -19,22 +20,39 @@ public class PatientService {
     @Autowired
     private ModelMapper modelMapper;
 
-    public PatientDetailsRequest DetailsAdd(PatientDetailsRequest patientDto)
-    {
-        PatientEntity patient=patientRepo.findPatientEntitiesByEmail(patientDto.getEmail());
-        patient.setFirstName(patientDto.getFirstName());
-        patient.setLastName(patientDto.getLastName());
-        patient.setCity(patientDto.getCity());
-        patient.setWeight(patientDto.getWeight());
-        patient.setGender(patientDto.getGender());
-        patient.setAddress(patientDto.getAddress());
-        patient.setHeight(patientDto.getHeight());
-        patient.setPinCode(patientDto.getPinCode());
-        patient.setBloodGroup(patientDto.getBloodGroup());
-        patient.setPhoneNumber(patientDto.getPhoneNumber());
-        PatientEntity detailsPatient=patientRepo.save(patient);
-        return this.modelMapper.map(detailsPatient,PatientDetailsRequest.class);
+    public PatientEntity checkJWT(String email, String jwtToken) {
+        PatientEntity patient = patientRepo.findPatientEntitiesByEmail(email);
+        if(patient==null || !Objects.equals(patient.getJwtToken(), jwtToken)){
+            return null;
+        }
+        return checkAccessTime(patient.getEmail());
     }
+
+    public PatientEntity checkAccessTime(String email){
+        PatientEntity patient = patientRepo.findPatientEntitiesByEmail(email);
+        if (patient.getLastAccessTime().plusHours(2).isBefore(LocalDateTime.now())) {
+            return null;
+        }
+        return patient;
+    }
+
+//    public PatientDetailsRequest DetailsAdd(PatientDetailsRequest patientDto)
+//    {
+//        PatientEntity patient=patientRepo.findPatientEntitiesByEmail(patientDto.getEmail());
+//        patient.setFirstName(patientDto.getFirstName());
+//        patient.setLastName(patientDto.getLastName());
+//        patient.setCity(patientDto.getCity());
+//        patient.setWeight(patientDto.getWeight());
+//        patient.setGender(patientDto.getGender());
+//        patient.setAddress(patientDto.getAddress());
+//        patient.setHeight(patientDto.getHeight());
+//        patient.setPinCode(patientDto.getPinCode());
+//        patient.setBloodGroup(patientDto.getBloodGroup());
+//        patient.setPhoneNumber(patientDto.getPhoneNumber());
+//        PatientEntity detailsPatient=patientRepo.save(patient);
+//        return this.modelMapper.map(detailsPatient,PatientDetailsRequest.class);
+//    }
+
 
     public static class PatientConflictException extends SecurityException{
         public PatientConflictException(){
@@ -90,6 +108,7 @@ public class PatientService {
         newPatient.setOtp(otp);
         newPatient.setFirstTimeLogin(false);
         newPatient.setOtpGeneratedTime(LocalDateTime.now());
+        newPatient.setRole("ROLE_patient");
 
         return patientRepo.save(newPatient);
     }
@@ -97,7 +116,7 @@ public class PatientService {
     public PatientEntity verifyPatient(String email, String otp){
         PatientEntity patient = patientRepo.findPatientEntitiesByEmail(email);
         if(patient==null){
-            throw new PatientNotFoundException();
+            return null;
         }
         else if(patient.getOtp().equals(otp) && Duration.between(patient.getOtpGeneratedTime(),
                 LocalDateTime.now()).getSeconds()<(2*60)) {
@@ -105,7 +124,7 @@ public class PatientService {
             patientRepo.save(patient);
         }
         else{
-            throw new OtpNotVerifiedException();
+            return null;
         }
         return patient;
     }
@@ -145,17 +164,43 @@ public class PatientService {
         return patient;
     }
 
-    public  PatientEntity updateDetails(PatientDetailsRequest body)
+    public  PatientEntity updateDetails(PatientDetailsRequest body, String email)
     {
-        PatientEntity patient=patientRepo.findPatientEntitiesByEmail(body.getEmail());
-       patient.setPhoneNumber(body.getPhoneNumber());
-       patient.setWeight(body.getWeight());
-       patient.setHeight(body.getHeight());
-       patient.setBloodGroup(body.getBloodGroup());
-       patient.setGender(body.getGender());
-       patient.setAddress(body.getAddress());
-       patient.setPinCode(body.getPinCode());
-       patient.setFirstTimeLogin(true);
-       return patientRepo.save(patient);
+        PatientEntity patient=patientRepo.findPatientEntitiesByEmail(email);
+        patient.setPhoneNumber(body.getPhoneNumber());
+        patient.setWeight(body.getWeight());
+        patient.setHeight(body.getHeight());
+        patient.setBloodGroup(body.getBloodGroup());
+        patient.setGender(body.getGender());
+        patient.setAddress(body.getAddress());
+        patient.setPinCode(body.getPinCode());
+        patient.setFirstTimeLogin(true);
+        patient.setLastAccessTime(LocalDateTime.now());
+        return patientRepo.save(patient);
     }
+
+    public void setJwtToken(String jwtToken, String email) {
+        PatientEntity patient = patientRepo.findPatientEntitiesByEmail(email);
+        patient.setJwtToken(jwtToken);
+        patientRepo.save(patient);
+    }
+
+    public void setLastAccessTime(String email) {
+        PatientEntity patient = patientRepo.findPatientEntitiesByEmail(email);
+        patient.setLastAccessTime(LocalDateTime.now());
+        patientRepo.save(patient);
+    }
+
+    public PatientEntity checkPassword(String email, String password) {
+        PatientEntity patient = patientRepo.findPatientEntitiesByEmail(email);
+        if(patient==null){
+            return null;
+        }
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        if (!encoder.matches(password, patient.getPassword())) {
+            return null;
+        }
+        return patient;
+    }
+
 }

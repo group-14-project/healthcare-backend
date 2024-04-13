@@ -5,6 +5,7 @@ import com.example.server.dto.response.DoctorStatus;
 import com.example.server.emailOtpPassword.EmailSender;
 import com.example.server.emailOtpPassword.PasswordUtil;
 import com.example.server.hospitalSpecialization.HospitalSpecializationEntity;
+import com.example.server.patient.PatientEntity;
 import com.example.server.patient.PatientService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,12 +37,34 @@ public class DoctorService {
         doctorRepository.save(newDoctor);
     }
 
-
-    public static class DoctorExists extends SecurityException{
-        public DoctorExists(){
-            super("Doctor already registered");
-        }
+    public void setJwtToken(String jwtToken, String email) {
+        DoctorEntity doctor = doctorRepository.findDoctorEntitiesByEmail(email);
+        doctor.setJwtToken(jwtToken);
+        doctorRepository.save(doctor);
     }
+
+    public void setLastAccessTime(String email) {
+        DoctorEntity doctor = doctorRepository.findDoctorEntitiesByEmail(email);
+        doctor.setLastAccessTime(LocalDateTime.now());
+        doctorRepository.save(doctor);
+    }
+
+    public DoctorEntity checkJWT(String email, String jwtToken) {
+        DoctorEntity doctor = doctorRepository.findDoctorEntitiesByEmail(email);
+        if(doctor==null || !Objects.equals(doctor.getJwtToken(), jwtToken)){
+            return null;
+        }
+        return checkAccessTime(doctor.getEmail());
+    }
+
+    private DoctorEntity checkAccessTime(String email) {
+        DoctorEntity doctor = doctorRepository.findDoctorEntitiesByEmail(email);
+        if (doctor.getLastAccessTime().plusHours(2).isBefore(LocalDateTime.now())) {
+            return null;
+        }
+        return doctor;
+    }
+
 
     public DoctorEntity findDoctorByEmail(String email){
         return doctorRepository.findDoctorEntitiesByEmail(email);
@@ -49,7 +73,7 @@ public class DoctorService {
     public DoctorEntity registerNewDoctor(String firstName, String lastName,  String email, String registrationId, String degree, Long phoneNumber){
         DoctorEntity doctor = doctorRepository.findDoctorEntitiesByEmail(email);
         if(doctor != null){
-            throw new DoctorService.DoctorExists();
+            return null;
         }
 
         DoctorEntity newDoctor = new DoctorEntity();
@@ -62,6 +86,8 @@ public class DoctorService {
         String randomPassword = passwordUtil.generateRandomPassword();
         newDoctor.setPassword(bCryptPasswordEncoder.encode(randomPassword));
         newDoctor.setFirstTimeLogin(false);
+        newDoctor.setRole("ROLE_doctor");
+
         doctorRepository.save(newDoctor);
 
         emailSender.sendMailWithPassword(
@@ -74,14 +100,15 @@ public class DoctorService {
     public DoctorEntity verifyDoctor(String email, String otp){
         DoctorEntity doctor = doctorRepository.findDoctorEntitiesByEmail(email);
         if(doctor==null){
-            throw new PatientService.PatientNotFoundException();
+            return null;
         }
         else if(doctor.getOtp().equals(otp) && Duration.between(doctor.getOtpGeneratedTime(),
                 LocalDateTime.now()).getSeconds()<(2*60)) {
-            return doctor;
+            doctor.setActiveStatus(1);
+            return doctorRepository.save(doctor);
         }
         else{
-            throw new PatientService.OtpNotVerifiedException();
+            return null;
         }
     }
 
@@ -91,18 +118,11 @@ public class DoctorService {
     }
 
     public DoctorEntity doctorDetails(String email){
-        DoctorEntity doctor = doctorRepository.findDoctorEntitiesByEmail(email);
-        if(doctor==null){
-            throw new PatientService.PatientNotFoundException();
-        }
-        return doctor;
+        return doctorRepository.findDoctorEntitiesByEmail(email);
     }
 
     public DoctorEntity updateOtp(String otp, String email){
         DoctorEntity doctor = doctorRepository.findDoctorEntitiesByEmail(email);
-        if(doctor==null){
-            throw new PatientService.PatientNotFoundException();
-        }
         doctor.setOtp(otp);
         doctor.setOtpGeneratedTime(LocalDateTime.now());
         return doctorRepository.save(doctor);

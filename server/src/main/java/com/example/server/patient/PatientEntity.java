@@ -52,11 +52,16 @@ public class PatientEntity{
 
     private LocalDateTime otpGeneratedTime;
 
-    private Role role;
+    private String role;
+
+    private String jwtToken;
+
+    private LocalDateTime lastAccessTime;
 
     @OneToMany(mappedBy = "patient")
     private List<ConnectionEntity> connection;
 
     @OneToMany(mappedBy = "pat")
     private List<ReportEntity> report;
+
 }

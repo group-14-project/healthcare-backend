@@ -4,8 +4,6 @@ import lombok.Data;
 @Data
 public class PatientDetailsRequest
 {
-    private String email;
-
     private String firstName;
 
     private String lastName;

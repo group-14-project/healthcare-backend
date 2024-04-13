@@ -48,19 +48,20 @@ public class ConnectionService {
     }
 
     public List<ConnectionEntity> findAllConnections(PatientEntity newPatient) {
-        List<ConnectionEntity> connectionEntities = connectionRepo.findByPatient(newPatient);
-        return connectionEntities;
+        return connectionRepo.findByPatient(newPatient);
     }
 
     public List<ConnectionEntity> findAllConnectionsByDoctor(DoctorEntity newDoctor)
     {
-        List<ConnectionEntity> connectionEntities=connectionRepo.findByDoctor(newDoctor);
-        return connectionEntities;
+        return connectionRepo.findByDoctor(newDoctor);
     }
 
+    public List<PatientEntity> findAllPatientsByDoctor(DoctorEntity newDoctor){
+        return connectionRepo.findPatientsByDoctor(newDoctor);
+    }
     public Integer countPatient(DoctorEntity newDoctor)
     {
-        Integer patientCount=connectionRepo.countByDoctor(newDoctor);
-        return patientCount;
+        return connectionRepo.countByDoctor(newDoctor);
     }
+
 }

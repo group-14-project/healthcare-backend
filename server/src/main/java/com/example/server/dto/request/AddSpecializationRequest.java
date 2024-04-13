@@ -7,18 +7,8 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AddSpecializationRequest {
-    @JsonProperty("specialization")
-    private AddSpecializationRequest.Specialization specialization;
-
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class Specialization{
-        @JsonProperty("name")
-        private String name;
-
-        @JsonProperty("hospitalEmail")
-        private String hospitalEmail;
+        @JsonProperty("specializationName")
+        private String specializationName;
 
         @JsonProperty("doctorFirstName")
         private String doctorFirstName;
@@ -37,5 +27,4 @@ public class AddSpecializationRequest {
 
         @JsonProperty("phoneNumber")
         private Long phoneNumber;
-    }
 }

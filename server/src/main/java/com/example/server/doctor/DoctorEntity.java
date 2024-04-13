@@ -37,9 +37,11 @@ public class DoctorEntity {
     private Integer activeStatus;
     private String otp;
     private LocalDateTime otpGeneratedTime;
-    private Role role;
+    private String role;
     private String imageUrl;
     private boolean firstTimeLogin;
+    private String jwtToken;
+    private LocalDateTime lastAccessTime;
     @ManyToOne
     @JoinColumn(name = "hospital_specialization_id")
     private HospitalSpecializationEntity hospitalSpecialization;

@@ -6,9 +6,7 @@ import java.util.List;
 
 @Data
 public class PatientHospitalBranchDoctorResponse {
-    private List<NameResponse> hospitallist;
+    private List<DoctorDetailsResponse> doctorsList;
 
     private List<NameResponse> patientList;
-
-    private List<BranchWiseDoctorResponse> branchWiseDoctorResponseList;
 }

@@ -103,4 +103,53 @@ public class EmailSender {
             throw new RuntimeException(errorMessage, e);
         }
     }
+
+    public void sendConsentEmailToPatient(String patientEmail,String patientName ,String doctorName, String newDoctorName){
+        try
+        {
+            MimeMessage mimeMailMessage = javaMailSender.createMimeMessage();
+            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMailMessage, true, "UTF8");
+
+            mimeMessageHelper.setTo(patientEmail);
+            mimeMessageHelper.setSubject("Arogyashala:");
+
+            String htmlContent = String.format("""
+            Hi %s,
+            Your have been referred to Dr.%s in the AROGYASHALA platform by,
+            Dr.%s.Please give your consent by Logging in to AROGYASHALA.
+            Regards,
+            Team Arogyashala
+            """, patientName,newDoctorName,doctorName);
+            mimeMessageHelper.setText(htmlContent);
+            javaMailSender.send(mimeMailMessage);
+        } catch (MessagingException e) {
+            // Notify the user about the error
+            String errorMessage = "An error occurred while sending the email. Please try again later.";
+            throw new RuntimeException(errorMessage, e);
+        }
+    }
+    public void sendConsentEmailToSrDoctor(String doctorEmail,String srDoctorName,String patientName ,String doctorName, String newDoctorName){
+        try
+        {
+            MimeMessage mimeMailMessage = javaMailSender.createMimeMessage();
+            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMailMessage, true, "UTF8");
+
+            mimeMessageHelper.setTo(doctorEmail);
+            mimeMessageHelper.setSubject("Arogyashala:");
+
+            String htmlContent = String.format("""
+            Hi Dr. %s,
+            Patient %s has been referred to Dr.%s in the AROGYASHALA platform by,
+            Dr.%s.Please give your consent.
+            Regards,
+            Team Arogyashala
+            """,srDoctorName, patientName,newDoctorName,doctorName);
+            mimeMessageHelper.setText(htmlContent);
+            javaMailSender.send(mimeMailMessage);
+        } catch (MessagingException e) {
+            // Notify the user about the error
+            String errorMessage = "An error occurred while sending the email. Please try again later.";
+            throw new RuntimeException(errorMessage, e);
+        }
+    }
 }

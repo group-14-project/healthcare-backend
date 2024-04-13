@@ -21,7 +21,7 @@ public class DoctorStatusScheduler {
     @Autowired
     private DoctorService doctorService; // Inject DoctorService to fetch doctor status data
 
-    @Scheduled(fixedRate = 10000)
+//    @Scheduled(fixedRate = 10000)
     public void sendDoctorStatusUpdate() throws IOException {
 //        List<WebSocketSession> sessions = doctorStatusWebSocketHandler.getSessions();
 //        for (WebSocketSession session : sessions) {
@@ -32,9 +32,6 @@ public class DoctorStatusScheduler {
 //                throw new RuntimeException(e);
 //            }
 //        }
-        System.out.println(
-                "Websecoket info going"
-        );
         doctorStatusWebSocketHandler.sendUpdatesToAll();
     }
 }

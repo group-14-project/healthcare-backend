@@ -1,8 +1,5 @@
-package com.example.server.converter;
+package com.example.server.common;
 
-import com.example.server.dto.response.PatientResponse;
-import com.example.server.jwtToken.JWTService;
-import com.example.server.patient.PatientEntity;
 import org.springframework.stereotype.Service;
 
 @Service

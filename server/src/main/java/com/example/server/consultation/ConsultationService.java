@@ -98,7 +98,7 @@ public class ConsultationService {
     }
 
     //TODO: make the timing every 1 hr
-    @Scheduled(fixedRate = 60000)
+//    @Scheduled(fixedRate = 60000)
     public void sendAppointmentReminders() {
         LocalDateTime currentTime = LocalDateTime.now();
         LocalDateTime reminderTime = currentTime.plusMinutes(46);

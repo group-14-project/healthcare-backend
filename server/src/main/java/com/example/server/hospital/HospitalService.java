@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,6 +35,33 @@ public class HospitalService {
     private final DoctorRepository doctorRepository;
     private final HospitalSpecializationRepository hospitalSpecializationRepository;
 
+    public void setJwtToken(String jwtToken, String email) {
+        HospitalEntity hospital = hospitalRepository.findByEmail(email);
+        hospital.setJwtToken(jwtToken);
+        hospitalRepository.save(hospital);
+    }
+
+    public void setLastAccessTime(String email) {
+        HospitalEntity hospital = hospitalRepository.findByEmail(email);
+        hospital.setLastAccessTime(LocalDateTime.now());
+        hospitalRepository.save(hospital);
+    }
+
+    public HospitalEntity checkJWT(String email, String jwtToken) {
+        HospitalEntity hospital = hospitalRepository.findByEmail(email);
+        if(hospital==null || !Objects.equals(hospital.getJwtToken(), jwtToken)){
+            return null;
+        }
+        return checkAccessTime(hospital.getEmail());
+    }
+
+    private HospitalEntity checkAccessTime(String email) {
+        HospitalEntity hospitalEntity = hospitalRepository.findByEmail(email);
+        if (hospitalEntity.getLastAccessTime().plusHours(2).isBefore(LocalDateTime.now())) {
+            return null;
+        }
+        return hospitalEntity;
+    }
 
 
     public static class HospitalNotFoundException extends SecurityException{
@@ -55,7 +83,7 @@ public class HospitalService {
     public HospitalEntity verifyHospital(String email, String otp){
         HospitalEntity hospital = hospitalRepository.findByEmail(email);
         if(hospital==null){
-            throw new HospitalNotFoundException();
+            return null;
         }
         else if(hospital.getOtp().equals(otp) && Duration.between(hospital.getOtpGeneratedTime(),
                 LocalDateTime.now()).getSeconds()<(2*60)) {
@@ -63,18 +91,18 @@ public class HospitalService {
             hospitalRepository.save(hospital);
         }
         else{
-            throw new PatientService.OtpNotVerifiedException();
+            return null;
         }
         return hospital;
     }
 
 
-    public HospitalEntity updatePassword(LoginUserRequest data)
+    public HospitalEntity updatePassword(String email, String password)
     {
-        HospitalEntity hospital = this.hospitalRepository.findByEmail(data.getUser().getEmail());
-        hospital.setPassword(bCryptPasswordEncoder.encode(data.getUser().getPassword()));
+        HospitalEntity hospital = hospitalRepository.findByEmail(email);
+        hospital.setPassword(bCryptPasswordEncoder.encode(password));
         hospital.setFirstTimeLogin(true);
-        return this.hospitalRepository.save(hospital);
+        return hospitalRepository.save(hospital);
     }
 
 
@@ -102,11 +130,6 @@ public class HospitalService {
         return hospitalRepository.save(hospital);
     }
 
-    public static class InvalidCredentialsException extends RuntimeException {
-        public InvalidCredentialsException(String message) {
-            super(message);
-        }
-    }
 
     public List<DoctorDetailsResponse> allDoctorsOfHospital(HospitalEntity hospital)
     {

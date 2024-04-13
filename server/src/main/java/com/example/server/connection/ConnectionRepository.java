@@ -21,4 +21,6 @@ public interface ConnectionRepository extends JpaRepository<ConnectionEntity, In
     Integer countByDoctor(DoctorEntity doctor);
 
 
+    @Query("select c.patient from ConnectionEntity c where c.doctor = :doctor")
+    List<PatientEntity> findPatientsByDoctor(DoctorEntity doctor);
 }

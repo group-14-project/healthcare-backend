@@ -19,30 +19,19 @@ public class HospitalEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
     private String hospitalName;
-
     private String email;
-
     private String password;
-
     private String address;
-
     private String city;
-
     private String pinCode;
-
     private String otp;
-
     private boolean firstTimeLogin;
-
     private LocalDateTime otpGeneratedTime;
-
     private boolean emailVerify;
-
-    private Role role;
-
+    private String role;
+    private LocalDateTime lastAccessTime;
+    private String jwtToken;
     @OneToMany(mappedBy = "hospital")
     private List<HospitalSpecializationEntity> hospitalSpecializationEntities = new ArrayList<>();
-
 }

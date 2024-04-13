@@ -19,6 +19,5 @@ public class HospitalRequestDto
 
     private String pinCode;
 
-    @Enumerated(value= EnumType.STRING)
-    private Role role;
+    private String role;
 }
