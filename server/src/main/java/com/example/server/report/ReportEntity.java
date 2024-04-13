@@ -23,7 +23,6 @@ public class ReportEntity {
     private byte[] reportLink;
   @Temporal(TemporalType.TIMESTAMP)
   private Date myDate;
-  private boolean consent;
   @ManyToOne
   @JoinColumn(name = "patientId")
   private PatientEntity pat;
