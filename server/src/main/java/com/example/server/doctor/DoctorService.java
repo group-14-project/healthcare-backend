@@ -171,4 +171,7 @@ public class DoctorService {
         return doctorStatus;
     }
 
+    public List<DoctorEntity> getDoctorsUnder(DoctorEntity doctorEntity) {
+        return doctorRepository.findDoctorEntitesBySeniorDoctor(doctorEntity);
+    }
 }

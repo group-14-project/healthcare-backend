@@ -64,4 +64,7 @@ public class ConnectionService {
         return connectionRepo.countByDoctor(newDoctor);
     }
 
+    public List<ConnectionEntity> findAllConnectionsByDoctorList(List<DoctorEntity> doctorEntities) {
+        return connectionRepo.findAllByDoctorList(doctorEntities);
+    }
 }

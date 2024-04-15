@@ -8,6 +8,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Component
 public class EmailSender {
@@ -72,8 +73,6 @@ public class EmailSender {
         } catch (MessagingException e) {
             // Notify the user about the error
             String errorMessage = "An error occurred while sending the email. Please try again later.";
-            // You can use your application's error handling mechanism to notify the user, such as showing a message on the UI or sending a notification
-            // Alternatively, you can rethrow the exception to propagate it further
             throw new RuntimeException(errorMessage, e);
         }
     }
@@ -144,6 +143,57 @@ public class EmailSender {
             Regards,
             Team Arogyashala
             """,srDoctorName, patientName,newDoctorName,doctorName);
+            mimeMessageHelper.setText(htmlContent);
+            javaMailSender.send(mimeMailMessage);
+        } catch (MessagingException e) {
+            // Notify the user about the error
+            String errorMessage = "An error occurred while sending the email. Please try again later.";
+            throw new RuntimeException(errorMessage, e);
+        }
+    }
+
+    public EmailSender approvedPatientConsentToMainDoctor(List<String> emails, String patient, String doctor, String newDoctor) {
+        for (String email : emails) {
+            try {
+                MimeMessage mimeMailMessage = javaMailSender.createMimeMessage();
+                MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMailMessage, true, "UTF8");
+                mimeMessageHelper.setTo(email);
+                mimeMessageHelper.setSubject("Arogyashala: Patient Approved the Consent");
+
+                String htmlContent = String.format("""
+                        Hi,
+                        Patient %s has approved the consent for sharing their reports to Dr.%s in the AROGYASHALA platform,
+                        recommended by Dr.%s.
+                        Regards,
+                        Team Arogyashala
+                        """, patient, newDoctor, doctor);
+                mimeMessageHelper.setText(htmlContent);
+                javaMailSender.send(mimeMailMessage);
+            } catch (MessagingException e) {
+                // Notify the user about the error
+                String errorMessage = "An error occurred while sending the email. Please try again later.";
+                throw new RuntimeException(errorMessage, e);
+            }
+        }
+        return null;
+    }
+
+    public void sendApprovalEmailNewDoctor(String email, String patient, String doctor, String newDoctorName) {
+        try
+        {
+            MimeMessage mimeMailMessage = javaMailSender.createMimeMessage();
+            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMailMessage, true, "UTF8");
+
+            mimeMessageHelper.setTo(email);
+            mimeMessageHelper.setSubject("Arogyashala: Patient has been recommended");
+
+            String htmlContent = String.format("""
+            Hi Dr. %s,
+            Patient %s has been referred you, by Dr.%s in the AROGYASHALA platform by,
+            You can check their Reports in the Arogyashala Application.
+            Regards,
+            Team Arogyashala
+            """,newDoctorName, patient,doctor);
             mimeMessageHelper.setText(htmlContent);
             javaMailSender.send(mimeMailMessage);
         } catch (MessagingException e) {

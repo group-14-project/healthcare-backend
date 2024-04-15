@@ -9,6 +9,9 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 public class ViewConsentResponse {
+    @JsonProperty("consentId")
+    private Integer consentId;
+
     @JsonProperty("patientFirstName")
     private String patientFirstName;
 

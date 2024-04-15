@@ -171,6 +171,7 @@ public class HospitalController
         }
 
         newDoctor.setHospitalSpecialization(newSpecialization);
+        newDoctor.setRole("ROLE_senior_doctor");
         doctorService.addDoctor(newDoctor);
 
         SuccessMessage successMessage = new SuccessMessage();

@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -195,6 +196,7 @@ public class   PatientController {
                 newPatient.getGender(), newPatient.isFirstTimeLogin(), pastAppointmentDetails, futureAppointmentDetails);
 
 
+        patient.setLastAccessTime(patientEntity.getEmail());
         return ResponseEntity.ok(patientResponse);
     }
 
@@ -214,6 +216,7 @@ public class   PatientController {
 
         List<ViewConsentResponse> viewConsentResponses = consentEntities.stream().map(
                 consentEntity -> new ViewConsentResponse(
+                        consentEntity.getId(),
                         consentEntity.getConnect().getPatient().getFirstName(),
                         consentEntity.getConnect().getPatient().getLastName(),
                         consentEntity.getConnect().getDoctor().getFirstName(),
@@ -228,6 +231,75 @@ public class   PatientController {
                 )
         ).toList();
 
+        patient.setLastAccessTime(patientEntity.getEmail());
+
         return ResponseEntity.ok(viewConsentResponses);
+    }
+
+    @PutMapping("/giveConsent")
+    public ResponseEntity<?> giveConsent(@RequestBody GiveConsentRequest giveConsentRequest, HttpServletRequest request ){
+        PatientEntity patientEntity = jwtTokenReCheck.checkJWTAndSessionPatient(request);
+        if(patientEntity==null)
+        {
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("Your Session has expired. Please Login again");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+
+        ConsentEntity consentEntity = consent.getConsentById(giveConsentRequest.getConsentId());
+        if(consentEntity==null){
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("Please Select Valid Options");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        PatientEntity newPatient = consentEntity.getConnect().getPatient();
+        if(newPatient!=patientEntity){
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("You are not authorized to access this");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        consent.givePatientConsent(consentEntity.getId());
+
+        patient.setLastAccessTime(patientEntity.getEmail());
+
+        consent.patientApproved(consentEntity, patientEntity);
+
+        consent.sendApprovalEmailToNewDoctor(consentEntity);
+
+
+        SuccessMessage successMessage = new SuccessMessage();
+        successMessage.setSuccessMessage("The Consent to share the report has been granted");
+        return ResponseEntity.ok(successMessage);
+    }
+
+    @PutMapping("/withdrawConsent")
+    public ResponseEntity<?> withdrawConsent(@RequestBody GiveConsentRequest giveConsentRequest, HttpServletRequest request){
+        PatientEntity patientEntity = jwtTokenReCheck.checkJWTAndSessionPatient(request);
+        if(patientEntity==null)
+        {
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("Your Session has expired. Please Login again");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+
+        ConsentEntity consentEntity = consent.getConsentById(giveConsentRequest.getConsentId());
+        if(consentEntity==null){
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("Please Select Valid Options");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        PatientEntity newPatient = consentEntity.getConnect().getPatient();
+        if(newPatient!=patientEntity){
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("You are not authorized to access this");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        consent.withdrawPatientConsent(consentEntity.getId());
+
+        patient.setLastAccessTime(patientEntity.getEmail());
+
+        SuccessMessage successMessage = new SuccessMessage();
+        successMessage.setSuccessMessage("The Consent to share the report has been withdrawn");
+        return ResponseEntity.ok(successMessage);
     }
 }

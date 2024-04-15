@@ -54,7 +54,7 @@ public class JWTTokenReCheck {
         String email = jwtMap.get("email");
         String isExpired = jwtMap.get("isExpired");
 
-        if(role == null || email==null || isExpired==null || !role.equals("ROLE_doctor")){
+        if(role == null || email==null || isExpired==null || (!role.equals("ROLE_doctor") && !role.equals("ROLE_senior_doctor"))){
             return null;
         }
 
@@ -75,5 +75,21 @@ public class JWTTokenReCheck {
         }
 
         return hospital.checkJWT(email, jwtToken);
+    }
+
+    public DoctorEntity checkJWTAndSessionSeniorDoctor(HttpServletRequest request) {
+        String jwtToken = jwtService.extractToken(request);
+
+        Map<String, String> jwtMap = jwtService.decodeJWT(jwtToken);
+
+        String role = jwtMap.get("role");
+        String email = jwtMap.get("email");
+        String isExpired = jwtMap.get("isExpired");
+
+        if(role == null || email==null || isExpired==null || !role.equals("ROLE_senior_doctor")){
+            return null;
+        }
+
+        return doctor.checkJWT(email, jwtToken);
     }
 }

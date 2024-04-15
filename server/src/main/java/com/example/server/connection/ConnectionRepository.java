@@ -23,4 +23,7 @@ public interface ConnectionRepository extends JpaRepository<ConnectionEntity, In
 
     @Query("select c.patient from ConnectionEntity c where c.doctor = :doctor")
     List<PatientEntity> findPatientsByDoctor(DoctorEntity doctor);
+
+    @Query("select c from ConnectionEntity c where c.doctor in :doctorEntities")
+    List<ConnectionEntity> findAllByDoctorList(List<DoctorEntity> doctorEntities);
 }
