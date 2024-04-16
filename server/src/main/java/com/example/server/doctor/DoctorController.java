@@ -94,6 +94,7 @@ public class DoctorController {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
+        headers.add("Access-Control-Expose-Headers", "Authorization");
 
         return ResponseEntity.ok().headers(headers).body(doctorLoginResponse);
     }

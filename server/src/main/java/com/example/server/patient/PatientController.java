@@ -81,6 +81,7 @@ public class   PatientController {
         patient.setLastAccessTime(newPatient.getEmail());
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
+        headers.add("Access-Control-Expose-Headers", "Authorization");
 
         return ResponseEntity.ok().headers(headers).body(patientResponse);
     }
