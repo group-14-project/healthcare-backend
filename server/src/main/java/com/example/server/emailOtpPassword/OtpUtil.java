@@ -9,7 +9,7 @@ import java.util.concurrent.ThreadLocalRandom;
 @Getter
 public class OtpUtil {
     public String generateOtp() {
-        int randomNumber = ThreadLocalRandom.current().nextInt(1000000);
-        return String.format("%04d", randomNumber);
+        int randomNumber = ThreadLocalRandom.current().nextInt(100000, 1000000); // Generate random number between 100000 and 999999
+        return String.format("%06d", randomNumber);
     }
 }
