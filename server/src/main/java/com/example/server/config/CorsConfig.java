@@ -11,6 +11,7 @@ public class CorsConfig implements WebMvcConfigurer {
         registry.addMapping("/**") // Allow all paths
                 .allowedOrigins("*") // Set your frontend origin here
                 .allowedMethods("GET", "POST", "PUT", "DELETE")
-                .allowedHeaders("*");
+                .allowedHeaders("*")
+                .exposedHeaders("content-length", "Authorization");
     }
 }
