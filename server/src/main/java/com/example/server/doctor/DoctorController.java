@@ -5,10 +5,7 @@ import com.example.server.connection.ConnectionService;
 import com.example.server.consent.ConsentEntity;
 import com.example.server.consent.ConsentService;
 import com.example.server.consultation.ConsultationService;
-import com.example.server.dto.request.DoctorPatientConsent;
-import com.example.server.dto.request.EmailRequest;
-import com.example.server.dto.request.LoginUserRequest;
-import com.example.server.dto.request.VerifyEmailRequest;
+import com.example.server.dto.request.*;
 import com.example.server.dto.response.*;
 import com.example.server.emailOtpPassword.EmailSender;
 import com.example.server.errorOrSuccessMessageResponse.ErrorMessage;
@@ -225,6 +222,48 @@ public class DoctorController {
         emailSender.sendConsentEmailToPatient(patientEntity.getEmail(),patientEntity.getFirstName(),doctorEntity.getFirstName(),newDoctorEntity.getFirstName());
         emailSender.sendConsentEmailToSrDoctor(doctorEntity.getHospitalSpecialization().getHeadDoctor().getEmail(),doctorEntity.getHospitalSpecialization().getHeadDoctor().getFirstName(),patientEntity.getFirstName(),doctorEntity.getFirstName(),newDoctorEntity.getFirstName());
         return ResponseEntity.status(HttpStatus.CREATED).body("Registered for approval from Patient and Senior Doctor");
+    }
+
+    @PutMapping("/updatePassword")
+    ResponseEntity<?> updatePassword(@RequestBody PasswordUpdateRequest body, HttpServletRequest request) throws IOException {
+        DoctorEntity doctorEntity = jwtTokenReCheck.checkJWTAndSessionDoctor(request);
+        if(doctorEntity==null){
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("Your Session has expired. Please Login again");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        DoctorEntity newDoctor = doctor.updatePassword(doctorEntity.getEmail(), body.getPassword());
+
+        List<ConnectionEntity> connectionEntities=connection.findAllConnectionsByDoctor(newDoctor);
+        List<AppointmentDetailsDto> pastAppointmentDetails = consultation.findPastAppointments(connectionEntities);
+        List<AppointmentDetailsDto> futureAppointmentDetails = consultation.findFutureAppointments(connectionEntities);
+        Integer patientCount=connection.countPatient(newDoctor);
+        Integer appointmentCount=consultation.countAppointments(connectionEntities);
+        List<EachDayCount> eachDayCounts=consultation.sendEachDayCount(connectionEntities);
+        DoctorLoginResponse doctorLoginResponse=new DoctorLoginResponse();
+        doctorLoginResponse.setDoctorId(newDoctor.getId());
+        doctorLoginResponse.setFirstName(newDoctor.getFirstName());
+        doctorLoginResponse.setLastName(newDoctor.getLastName());
+        doctorLoginResponse.setDegree(newDoctor.getDegree());
+        doctorLoginResponse.setFirstTimeLogin(newDoctor.isFirstTimeLogin());
+        doctorLoginResponse.setRegistrationId(newDoctor.getRegistrationId());
+        doctorLoginResponse.setEachDayCounts(eachDayCounts);
+        doctorLoginResponse.setTotalAppointments(appointmentCount);
+        doctorLoginResponse.setPastAppointmentDetails(pastAppointmentDetails);
+        doctorLoginResponse.setFutureAppointmentDetails(futureAppointmentDetails);
+        doctorLoginResponse.setTotalPatients(patientCount);
+
+        doctorStatusScheduler.sendDoctorStatusUpdate();
+
+        String jwtToken = jwtService.createJwt(newDoctor.getEmail(), newDoctor.getRole());
+        doctor.setJwtToken(jwtToken, newDoctor.getEmail());
+        doctor.setLastAccessTime(newDoctor.getEmail());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(jwtToken);
+
+        return ResponseEntity.ok().headers(headers).body(doctorLoginResponse);
+
     }
 
 }

@@ -5,8 +5,6 @@ import com.example.server.dto.response.DoctorStatus;
 import com.example.server.emailOtpPassword.EmailSender;
 import com.example.server.emailOtpPassword.PasswordUtil;
 import com.example.server.hospitalSpecialization.HospitalSpecializationEntity;
-import com.example.server.patient.PatientEntity;
-import com.example.server.patient.PatientService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -173,5 +171,11 @@ public class DoctorService {
 
     public List<DoctorEntity> getDoctorsUnder(DoctorEntity doctorEntity) {
         return doctorRepository.findDoctorEntitesBySeniorDoctor(doctorEntity);
+    }
+
+    public DoctorEntity updatePassword(String email, String password) {
+        DoctorEntity doctor = doctorRepository.findDoctorEntitiesByEmail(email);
+        doctor.setPassword(bCryptPasswordEncoder.encode(password));
+        return doctorRepository.save(doctor);
     }
 }
