@@ -1,11 +1,14 @@
 package com.example.server.patient;
 
+import com.example.server.aws.AwsServiceImplementation;
+import com.example.server.aws.EncryptFile;
 import com.example.server.connection.ConnectionEntity;
 import com.example.server.connection.ConnectionService;
 import com.example.server.consent.ConsentEntity;
 import com.example.server.consent.ConsentService;
 import com.example.server.consultation.ConsultationService;
-import com.example.server.common.PatientObjectConverter;
+import com.example.server.doctor.DoctorEntity;
+import com.example.server.doctor.DoctorRepository;
 import com.example.server.dto.request.*;
 import com.example.server.dto.response.*;
 import com.example.server.emailOtpPassword.EmailSender;
@@ -13,38 +16,51 @@ import com.example.server.errorOrSuccessMessageResponse.ErrorMessage;
 import com.example.server.errorOrSuccessMessageResponse.SuccessMessage;
 import com.example.server.jwtToken.JWTService;
 import com.example.server.jwtToken.JWTTokenReCheck;
+import com.example.server.report.ReportEntity;
+import com.example.server.report.ReportService;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.val;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/patient")
 @CrossOrigin
 public class   PatientController {
     private final PatientService patient;
-
+    private final EncryptFile encryptFile;
     private final EmailSender emailSender;
-
+    private final AwsServiceImplementation awsServiceImplementation;
     private final JWTService jwtService;
-
+    private final ReportService report;
     private final JWTTokenReCheck jwtTokenReCheck;
     private final ConsentService consent;
+
+    private final DoctorRepository doctorRepository;
 
     private final ConnectionService connection;
 
     private final ConsultationService consultation;
 
-    public PatientController(PatientService patient, EmailSender emailSender, JWTService jwtService, JWTTokenReCheck jwtTokenReCheck, ConsentService consent, ConnectionService connection, ConsultationService consultation){
+    public PatientController(PatientService patient, EncryptFile encryptFile, EmailSender emailSender, AwsServiceImplementation awsServiceImplementation, JWTService jwtService, ReportService report, JWTTokenReCheck jwtTokenReCheck, ConsentService consent, DoctorRepository doctorRepository, ConnectionService connection, ConsultationService consultation){
         this.patient = patient;
+        this.encryptFile = encryptFile;
         this.emailSender = emailSender;
+        this.awsServiceImplementation = awsServiceImplementation;
         this.jwtService = jwtService;
+        this.report = report;
         this.jwtTokenReCheck = jwtTokenReCheck;
         this.consent = consent;
+        this.doctorRepository = doctorRepository;
         this.connection = connection;
         this.consultation = consultation;
     }
@@ -302,4 +318,88 @@ public class   PatientController {
         successMessage.setSuccessMessage("The Consent to share the report has been withdrawn");
         return ResponseEntity.ok(successMessage);
     }
+
+
+    @PostMapping("/uploadReport/{id}")
+    public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file,
+                                        @PathVariable("id") Integer id, HttpServletRequest request) throws Exception {
+        PatientEntity patientEntity = jwtTokenReCheck.checkJWTAndSessionPatient(request);
+        if(patientEntity==null)
+        {
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("Your Session has expired. Please Login again");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+
+        if (file.isEmpty()) {
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("No PDF uploaded");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        if (!"application/pdf".equals(file.getContentType())) {
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("File is not a PDF");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+
+        }
+        String randomUUID = UUID.randomUUID().toString();
+
+        String fileName = "Report-" + patientEntity.getFirstName() + "-" + randomUUID;
+
+        String contentType = file.getContentType();
+        InputStream inputStream = file.getInputStream();
+
+        byte[] encryptedBytes = encryptFile.encryptFile(inputStream);
+
+        // Create an InputStream from the encrypted content
+        InputStream encryptedInputStream = new ByteArrayInputStream(encryptedBytes);
+        if(!awsServiceImplementation.uploadFile("adityavit36",fileName, (long)encryptedBytes.length, contentType, encryptedInputStream)){
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("Unexpected Error Please upload Again");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+
+        //TODO: work to be done
+        Optional<DoctorEntity> doctor = doctorRepository.findById(id);
+        String doctorEmail = doctor.get().getEmail();
+
+        ConnectionEntity connectionEntity = connection.findConnection(doctorEmail, patientEntity.getEmail());
+
+        if(!doctorEmail.isEmpty() && connectionEntity == null) {
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("Doctor not Found, please try again");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        ReportEntity reportEntity = report.addReport(fileName, patientEntity, connectionEntity);
+        if(reportEntity == null) {
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("Unexpected Error Please upload Again");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        patient.setLastAccessTime(patientEntity.getEmail());
+
+        SuccessMessage successMessage = new SuccessMessage();
+        successMessage.setSuccessMessage("File has been uploaded Successfully");
+        return ResponseEntity.ok(successMessage);
+    }
+
+    @GetMapping("/downloadFile/{id}")
+    public ResponseEntity<?> downloadFile(@PathVariable("id") Integer id, HttpServletRequest request) throws Exception {
+        PatientEntity patientEntity = jwtTokenReCheck.checkJWTAndSessionPatient(request);
+        if(patientEntity==null)
+        {
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("Your Session has expired. Please Login again");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        ReportEntity reportEntity = report.findReportById(id);
+        String bucketName = "adityavit36";// Download the encrypted file content
+        val encryptedBody = awsServiceImplementation.downloadFile(bucketName,reportEntity.getFileName()); // Decrypt the file content
+
+        byte[] decryptedBytes = encryptFile.decryptFile(encryptedBody.toByteArray());
+
+        patient.setLastAccessTime(patientEntity.getEmail());
+        return ResponseEntity.ok().body(decryptedBytes);
+    }
+
 }

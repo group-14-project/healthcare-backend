@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.aot.generate.GeneratedTypeReference;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -19,13 +20,15 @@ public class ReportEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
-  @Lob
-    private byte[] reportLink;
-  @Temporal(TemporalType.TIMESTAMP)
-  private Date myDate;
+
+  private String fileName;
+
+  private LocalDateTime dateTime;
+
   @ManyToOne
   @JoinColumn(name = "patientId")
   private PatientEntity pat;
+
   @ManyToOne
   @JoinColumn(name = "connectionId")
   private ConnectionEntity con;
