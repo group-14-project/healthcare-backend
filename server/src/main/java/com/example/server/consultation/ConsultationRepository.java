@@ -31,4 +31,11 @@ public interface ConsultationRepository extends JpaRepository<ConsultationEntity
             "BETWEEN :startTime AND :endTime")
 
     List<ConsultationEntity> getByAppointmentDateAndTime(LocalDateTime startTime, LocalDateTime endTime);
+
+    @Query("SELECT c FROM ConsultationEntity c WHERE c.appointmentDateAndTime < :currentTime " +
+            "AND c.appointmentDateAndTime = (" +
+            "SELECT MAX(c2.appointmentDateAndTime) FROM ConsultationEntity c2 " +
+            "WHERE c2.connectionId IN :connectionEntities " +
+            "AND c2.connectionId = c.connectionId)")
+    List<ConsultationEntity> findAllLatestByDoctor(List<ConnectionEntity> connectionEntities, LocalDateTime currentTime);
 }

@@ -3,7 +3,6 @@ import com.example.server.doctor.DoctorEntity;
 import com.example.server.doctor.DoctorRepository;
 import com.example.server.doctor.DoctorService;
 import com.example.server.dto.request.*;
-import com.example.server.dto.response.ApiResponse;
 import com.example.server.dto.response.DoctorDetailsResponse;
 import com.example.server.dto.response.HospitalResponse;
 import com.example.server.emailOtpPassword.EmailSender;
@@ -14,6 +13,8 @@ import com.example.server.hospitalSpecialization.HospitalSpecializationService;
 import com.example.server.jwtToken.JWTService;
 import com.example.server.jwtToken.JWTTokenReCheck;
 import com.example.server.patient.PatientService;
+import com.example.server.specialization.SpecializationEntity;
+import com.example.server.specialization.SpecializationService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -30,16 +31,19 @@ public class HospitalController
     private final HospitalService hospital;
     private final DoctorService doctorService;
     private final EmailSender emailSender;
+
+    private final SpecializationService specializationService;
     private final HospitalSpecializationService hospitalSpecialization;
     private final DoctorRepository doctorRepository;
     private final JWTService jwtService;
     private final JWTTokenReCheck jwtTokenReCheck;
-    public HospitalController(HospitalService hospitalService, HospitalSpecializationService hospitalSpecialization, DoctorService doctorService, EmailSender emailSender, DoctorRepository doctorRepository, JWTService jwtService, JWTTokenReCheck jwtTokenReCheck)
+    public HospitalController(HospitalService hospitalService, HospitalSpecializationService hospitalSpecialization, DoctorService doctorService, EmailSender emailSender, SpecializationService specializationService, DoctorRepository doctorRepository, JWTService jwtService, JWTTokenReCheck jwtTokenReCheck)
     {
         this.hospital = hospitalService;
         this.hospitalSpecialization = hospitalSpecialization;
         this.doctorService = doctorService;
         this.emailSender = emailSender;
+        this.specializationService = specializationService;
         this.doctorRepository = doctorRepository;
         this.jwtService = jwtService;
         this.jwtTokenReCheck = jwtTokenReCheck;
@@ -142,6 +146,19 @@ public class HospitalController
         if(hospitalEntity==null){
             ErrorMessage errorMessage = new ErrorMessage();
             errorMessage.setErrorMessage("Your session has expired. Please Login again");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+
+        SpecializationEntity specializationEntity = specializationService.getSpecializationId(body.getSpecializationName());
+        if(specializationEntity==null){
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("Specialization Name not correct");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        HospitalSpecializationEntity hospitalSpecializationEntity = hospitalSpecialization.findByHospitalAndSpecialization(hospitalEntity, specializationEntity);
+        if(hospitalSpecializationEntity!=null){
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("Data not correct or specialization already exits");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
         }
 

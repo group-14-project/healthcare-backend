@@ -9,6 +9,8 @@ import com.example.server.specialization.SpecializationEntity;
 import com.example.server.specialization.SpecializationService;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class HospitalSpecializationService {
     private final HospitalSpecializationRepository hospitalSpecializationRepository;
@@ -56,5 +58,13 @@ public class HospitalSpecializationService {
             return null;
         }
         return hospitalSpecializationRepository.findByHospitalIdAndSpecializationId(hospital.getId(),specialization.getId());
+    }
+
+    public List<HospitalSpecializationEntity> getSpecializationByHospital(HospitalEntity hospital) {
+        return hospitalSpecializationRepository.findAllByHospital(hospital);
+    }
+
+    public HospitalSpecializationEntity findByHospitalAndSpecialization(HospitalEntity hospitalEntity, SpecializationEntity specializationEntity) {
+        return hospitalSpecializationRepository.findByHospitalIdAndSpecializationId(hospitalEntity.getId(), specializationEntity.getId());
     }
 }

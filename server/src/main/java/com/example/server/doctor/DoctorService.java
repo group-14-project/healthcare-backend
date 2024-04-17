@@ -1,15 +1,18 @@
 package com.example.server.doctor;
 
-import com.example.server.dto.response.DoctorDetailsResponse;
-import com.example.server.dto.response.DoctorStatus;
+import com.example.server.dto.response.*;
 import com.example.server.emailOtpPassword.EmailSender;
 import com.example.server.emailOtpPassword.PasswordUtil;
+import com.example.server.hospital.HospitalEntity;
+import com.example.server.hospital.HospitalRepository;
 import com.example.server.hospitalSpecialization.HospitalSpecializationEntity;
+import com.example.server.hospitalSpecialization.HospitalSpecializationRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -24,11 +27,17 @@ public class DoctorService {
 
     private final EmailSender emailSender;
 
-    public DoctorService(DoctorRepository doctorRepository, PasswordUtil passwordUtil, BCryptPasswordEncoder bCryptPasswordEncoder, EmailSender emailSender) {
+    private final HospitalRepository hospitalRepository;
+
+    private final HospitalSpecializationRepository hospitalSpecializationRepository;
+
+    public DoctorService(DoctorRepository doctorRepository, PasswordUtil passwordUtil, BCryptPasswordEncoder bCryptPasswordEncoder, EmailSender emailSender, HospitalRepository hospitalRepository, HospitalSpecializationRepository hospitalSpecializationRepository) {
         this.doctorRepository = doctorRepository;
         this.passwordUtil = passwordUtil;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.emailSender = emailSender;
+        this.hospitalRepository = hospitalRepository;
+        this.hospitalSpecializationRepository = hospitalSpecializationRepository;
     }
 
     public void addDoctor(DoctorEntity newDoctor) {
@@ -177,5 +186,38 @@ public class DoctorService {
         DoctorEntity doctor = doctorRepository.findDoctorEntitiesByEmail(email);
         doctor.setPassword(bCryptPasswordEncoder.encode(password));
         return doctorRepository.save(doctor);
+    }
+
+    public List<HospitalBranchDoctorResponse> viewAllHospitalsAndDoctors() {
+        List<HospitalEntity> hospitalEntities = hospitalRepository.findAll();
+        List<HospitalBranchDoctorResponse> response = new ArrayList<>();
+
+        for (HospitalEntity hospitalEntity : hospitalEntities) {
+            HospitalBranchDoctorResponse hospitalResponse = new HospitalBranchDoctorResponse();
+            hospitalResponse.setHospital(hospitalEntity.getHospitalName());
+
+            List<HospitalSpecializationEntity> specializationEntities = hospitalSpecializationRepository.findAllByHospital(hospitalEntity);
+            List<SpecializationName> specializationNames = new ArrayList<>();
+
+            for(HospitalSpecializationEntity specializationEntity : specializationEntities){
+                SpecializationName specializationName = new SpecializationName();
+                specializationName.setSpecialization(specializationEntity.getSpecialization().getName());
+
+                List<DoctorEntity> doctorEntities = doctorRepository.findAllBySpecialization(specializationEntity);
+                List<NameResponse> nameResponses = new ArrayList<>();
+                for(DoctorEntity doctorEntity : doctorEntities){
+                    NameResponse nameResponse = new NameResponse();
+                    nameResponse.setFirstName(doctorEntity.getFirstName());
+                    nameResponse.setLastName(doctorEntity.getLastName());
+                    nameResponse.setEmail(doctorEntity.getEmail());
+                    nameResponses.add(nameResponse);
+                }
+                specializationName.setDoctors(nameResponses);
+                specializationNames.add(specializationName);
+            }
+            hospitalResponse.setSpecializationNames(specializationNames);
+            response.add(hospitalResponse);
+        }
+        return response;
     }
 }

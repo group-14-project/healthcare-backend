@@ -74,8 +74,7 @@ public class ConsultationService {
 
     public Integer countAppointments(List<ConnectionEntity> connectionEntities)
     {
-        Integer countAppointment =consultationRepo.countAppointments(connectionEntities);
-        return countAppointment;
+        return consultationRepo.countAppointments(connectionEntities);
     }
 
     public List<EachDayCount> sendEachDayCount(List<ConnectionEntity> connectionEntities){
@@ -112,4 +111,10 @@ public class ConsultationService {
     }
 
 
+    public List<ConsultationEntity> findLatestAppointment(List<ConnectionEntity> connectionEntities) {
+        LocalDateTime currentTime = LocalDateTime.now();
+        List<ConsultationEntity>  consultationEntities =consultationRepo.findAllLatestByDoctor(connectionEntities, currentTime);
+        consultationEntities.sort((c1, c2) -> c2.getAppointmentDateAndTime().compareTo(c1.getAppointmentDateAndTime()));
+        return consultationEntities;
+    }
 }

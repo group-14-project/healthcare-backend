@@ -63,12 +63,10 @@ public class HospitalService {
         return hospitalEntity;
     }
 
-
-    public static class HospitalNotFoundException extends SecurityException{
-        public HospitalNotFoundException(){
-            super("Patient not found");
-        }
+    public List<HospitalEntity> getAllHospitals() {
+        return hospitalRepository.findAll();
     }
+
 
 
     public HospitalService(HospitalRepository hospitalRepository, PasswordEncoder passwordEncoder, BCryptPasswordEncoder bCryptPasswordEncoder, SpecializationRepository specilization, SpecializationRepository specialization, SpecializationRepository specializationRepository, DoctorRepository doctorRepository, HospitalSpecializationRepository hospitalSpecializationRepository) {

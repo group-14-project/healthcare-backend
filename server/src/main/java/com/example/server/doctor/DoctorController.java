@@ -4,6 +4,7 @@ import com.example.server.connection.ConnectionEntity;
 import com.example.server.connection.ConnectionService;
 import com.example.server.consent.ConsentEntity;
 import com.example.server.consent.ConsentService;
+import com.example.server.consultation.ConsultationEntity;
 import com.example.server.consultation.ConsultationService;
 import com.example.server.dto.request.*;
 import com.example.server.dto.response.*;
@@ -12,7 +13,6 @@ import com.example.server.errorOrSuccessMessageResponse.ErrorMessage;
 import com.example.server.hospitalSpecialization.HospitalSpecializationEntity;
 import com.example.server.jwtToken.JWTService;
 import com.example.server.jwtToken.JWTTokenReCheck;
-import com.example.server.patient.PatientController;
 import com.example.server.patient.PatientEntity;
 import com.example.server.patient.PatientService;
 import com.example.server.webSocket.DoctorStatusScheduler;
@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -141,31 +142,19 @@ public class DoctorController {
         return ResponseEntity.ok(departmentDto);
     }
 
-//TODO: send details of all patients of a doctor and all doctors to send consent
-    @GetMapping("/viewPatientsAndDoctors")
-    public ResponseEntity<?> getPatientsHospitalsDoctors(HttpServletRequest request){
+
+    @GetMapping("/viewHospitalsAndDoctors")
+    public ResponseEntity<?> getHospitalsDoctors(HttpServletRequest request){
         DoctorEntity mainDoctor = jwtTokenReCheck.checkJWTAndSessionDoctor(request);
         if(mainDoctor==null){
             ErrorMessage errorMessage = new ErrorMessage();
             errorMessage.setErrorMessage("Your Session has expired. Please Login again");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
         }
-        PatientHospitalBranchDoctorResponse currData = new PatientHospitalBranchDoctorResponse();
-        List<PatientEntity> patientEntities = connection.findAllPatientsByDoctor(mainDoctor);
-        List<DoctorDetailsResponse> doctorStatusList = doctor.getAllDoctorDetails();
+        List<HospitalBranchDoctorResponse> currData = doctor.viewAllHospitalsAndDoctors();
 
-        List<NameResponse> patientDetails = patientEntities.stream().map(
-                patientEntity -> new NameResponse(
-                      patientEntity.getFirstName(),
-                      patientEntity.getLastName(),
-                      patientEntity.getEmail()
-                )
-        ).toList();
-        PatientHospitalBranchDoctorResponse response = new PatientHospitalBranchDoctorResponse();
-        response.setDoctorsList(doctorStatusList);
-        response.setPatientList(patientDetails);
-
-        return ResponseEntity.ok(response);
+        doctor.setLastAccessTime(mainDoctor.getEmail());
+        return ResponseEntity.ok(currData);
     }
 
     //JWT not needed
@@ -265,5 +254,32 @@ public class DoctorController {
         return ResponseEntity.ok().headers(headers).body(doctorLoginResponse);
 
     }
+
+    @GetMapping("/patientNameAndLastAppointmentTime")
+    public ResponseEntity<?> getPatientNameAndLastDetails(HttpServletRequest request){
+        DoctorEntity doctorEntity = jwtTokenReCheck.checkJWTAndSessionDoctor(request);
+        if(doctorEntity==null){
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("Your Session has expired. Please Login again");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        List<ConnectionEntity> connectionEntities = connection.findAllConnectionsByDoctor(doctorEntity);
+        List<ConsultationEntity> consultationEntities = consultation.findLatestAppointment(connectionEntities);
+
+        List<PatientAndLastAppointmentTime> response = new ArrayList<>();
+
+        for (ConsultationEntity consultationEntity : consultationEntities) {
+            PatientAndLastAppointmentTime patientAndLastAppointmentTime = new PatientAndLastAppointmentTime();
+            patientAndLastAppointmentTime.setFirstName(consultationEntity.getConnectionId().getPatient().getFirstName());
+            patientAndLastAppointmentTime.setLastName(consultationEntity.getConnectionId().getPatient().getLastName());
+            patientAndLastAppointmentTime.setDate(consultationEntity.getAppointmentDateAndTime());
+            response.add(patientAndLastAppointmentTime);
+        }
+
+        doctor.setLastAccessTime(doctorEntity.getEmail());
+
+        return ResponseEntity.ok(response);
+    }
+
 
 }
