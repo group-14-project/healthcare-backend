@@ -38,11 +38,11 @@ public class ConnectionService {
         DoctorEntity currDoctor = doctor.doctorDetails(doctorEmail);
         PatientEntity currPatient = patient.patientDetails(patientEmail);
         if(currPatient==null || currDoctor==null){
-            throw new PatientController.UnexpectedErrorException();
+            return null;
         }
         ConnectionEntity connectionEntity = connectionRepo.findByDoctorAndPatient(currDoctor, currPatient);
         if(connectionEntity==null){
-            throw new PatientController.UnexpectedErrorException();
+            return null;
         }
         return connectionEntity;
     }

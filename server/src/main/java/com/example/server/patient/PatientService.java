@@ -66,21 +66,6 @@ public class PatientService {
         }
     }
 
-    public static class PatientAlreadyRegisteredException extends SecurityException{
-        public PatientAlreadyRegisteredException(){
-            super("Patient not found");
-        }
-    }
-
-    public static class OtpNotVerifiedException extends SecurityException{
-        public OtpNotVerifiedException(){ super("OTP not verified"); }
-    }
-
-    public static class InvalidPasswordException extends SecurityException{
-        public InvalidPasswordException(){
-            super("Incorrect Password");
-        }
-    }
 
     @Bean
     public static BCryptPasswordEncoder bCryptPasswordEncoder(){

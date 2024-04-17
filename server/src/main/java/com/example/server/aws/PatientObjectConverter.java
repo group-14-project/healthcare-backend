@@ -1,4 +1,4 @@
-package com.example.server.common;
+package com.example.server.aws;
 
 import org.springframework.stereotype.Service;
 
