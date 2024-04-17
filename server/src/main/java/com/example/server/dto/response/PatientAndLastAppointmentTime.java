@@ -15,4 +15,8 @@ public class PatientAndLastAppointmentTime {
 
     @JsonProperty("date")
     private LocalDateTime date;
+
+    @JsonProperty("email")
+    private String email;
+
 }

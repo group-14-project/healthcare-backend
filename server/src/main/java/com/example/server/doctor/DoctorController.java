@@ -253,9 +253,10 @@ public class DoctorController {
 
         return ResponseEntity.ok().headers(headers).body(doctorLoginResponse);
 
+
     }
 
-    @GetMapping("/patientNameAndLastAppointmentTime")
+    @GetMapping("/patientsLastAppointment")
     public ResponseEntity<?> getPatientNameAndLastDetails(HttpServletRequest request){
         DoctorEntity doctorEntity = jwtTokenReCheck.checkJWTAndSessionDoctor(request);
         if(doctorEntity==null){
@@ -273,6 +274,7 @@ public class DoctorController {
             patientAndLastAppointmentTime.setFirstName(consultationEntity.getConnectionId().getPatient().getFirstName());
             patientAndLastAppointmentTime.setLastName(consultationEntity.getConnectionId().getPatient().getLastName());
             patientAndLastAppointmentTime.setDate(consultationEntity.getAppointmentDateAndTime());
+            patientAndLastAppointmentTime.setEmail(consultationEntity.getConnectionId().getPatient().getEmail());
             response.add(patientAndLastAppointmentTime);
         }
 
