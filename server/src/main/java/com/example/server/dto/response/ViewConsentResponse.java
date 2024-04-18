@@ -36,6 +36,9 @@ public class ViewConsentResponse {
     @JsonProperty("newDoctorLastName")
     private String newDoctorLastName;
 
+    @JsonProperty("newDoctorHospitalName")
+    private String newDoctorHospitalName;
+
     @JsonProperty("patientConsent")
     private Boolean patientConsent;
 

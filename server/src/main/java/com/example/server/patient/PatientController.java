@@ -241,6 +241,7 @@ public class   PatientController {
                         consentEntity.getConnect().getDoctor().getHospitalSpecializationhead().getHeadDoctor().getLastName(),
                         consentEntity.getNewDoctor().getFirstName(),
                         consentEntity.getNewDoctor().getLastName(),
+                        consentEntity.getNewDoctor().getHospitalSpecialization().getHospital().getHospitalName(),
                         consentEntity.isPatientConsent(),
                         consentEntity.isSeniorDoctorConsent(),
                         consentEntity.getLocalDate()

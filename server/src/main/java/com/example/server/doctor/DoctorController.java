@@ -205,7 +205,7 @@ public class DoctorController {
         ConsentEntity consentEntity1 = consent.saveConsent(consentEntity);
         if(consentEntity1==null){
             ErrorMessage errorMessage = new ErrorMessage();
-            errorMessage.setErrorMessage("Could not save consent");
+            errorMessage.setErrorMessage("Request for consent is already registered");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
         }
         emailSender.sendConsentEmailToPatient(patientEntity.getEmail(),patientEntity.getFirstName(),doctorEntity.getFirstName(),newDoctorEntity.getFirstName());

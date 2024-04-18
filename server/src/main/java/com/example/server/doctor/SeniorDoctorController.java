@@ -4,18 +4,18 @@ import com.example.server.connection.ConnectionEntity;
 import com.example.server.connection.ConnectionService;
 import com.example.server.consent.ConsentEntity;
 import com.example.server.consent.ConsentService;
+import com.example.server.dto.request.GiveConsentRequest;
 import com.example.server.dto.response.SeniorDoctorViewConsentResponse;
 import com.example.server.dto.response.ViewConsentResponse;
 import com.example.server.errorOrSuccessMessageResponse.ErrorMessage;
+import com.example.server.errorOrSuccessMessageResponse.SuccessMessage;
 import com.example.server.jwtToken.JWTService;
 import com.example.server.jwtToken.JWTTokenReCheck;
+import com.example.server.patient.PatientEntity;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -67,6 +67,7 @@ public class SeniorDoctorController {
                         consentEntity.getConnect().getDoctor().getHospitalSpecializationhead().getHeadDoctor().getLastName(),
                         consentEntity.getNewDoctor().getFirstName(),
                         consentEntity.getNewDoctor().getLastName(),
+                        consentEntity.getNewDoctor().getHospitalSpecialization().getHospital().getHospitalName(),
                         consentEntity.isPatientConsent(),
                         consentEntity.isSeniorDoctorConsent(),
                         consentEntity.getLocalDate()
@@ -84,6 +85,7 @@ public class SeniorDoctorController {
                         consentEntity.getConnect().getDoctor().getHospitalSpecializationhead().getHeadDoctor().getLastName(),
                         consentEntity.getNewDoctor().getFirstName(),
                         consentEntity.getNewDoctor().getLastName(),
+                        consentEntity.getNewDoctor().getHospitalSpecialization().getHospital().getHospitalName(),
                         consentEntity.isPatientConsent(),
                         consentEntity.isSeniorDoctorConsent(),
                         consentEntity.getLocalDate()
@@ -99,5 +101,35 @@ public class SeniorDoctorController {
         return ResponseEntity.ok(consentResponse);
     }
 
+    @PostMapping("/approveConsent")
+    public ResponseEntity<?> approveConsent(@RequestBody GiveConsentRequest giveConsentRequest, HttpServletRequest request ) {
+        DoctorEntity doctorEntity = jwtTokenReCheck.checkJWTAndSessionSeniorDoctor(request);
+        if (doctorEntity == null) {
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("Your Session has expired. Please Login again");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+
+        ConsentEntity consentEntity = consent.getConsentById(giveConsentRequest.getConsentId());
+        if (consentEntity == null) {
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("Please Select Valid Options");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        DoctorEntity newDoctor = consentEntity.getConnect().getDoctor().getHospitalSpecialization().getHeadDoctor();
+        if (newDoctor != doctorEntity) {
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("You are not authorized to access this");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        consent.giveDoctorConsent(consentEntity.getId());
+        doctor.setLastAccessTime(newDoctor.getEmail());
+
+        consent.seniorDrApproved(consentEntity, consentEntity.getConnect().getPatient());
+        consent.sendApprovalEmailToNewDoctor(consentEntity);
+        SuccessMessage successMessage = new SuccessMessage();
+        successMessage.setSuccessMessage("The Consent to share the report has been granted");
+        return ResponseEntity.ok(successMessage);
+    }
 
 }
