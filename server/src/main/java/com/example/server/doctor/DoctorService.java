@@ -179,7 +179,8 @@ public class DoctorService {
     }
 
     public List<DoctorEntity> getDoctorsUnder(DoctorEntity doctorEntity) {
-        return doctorRepository.findDoctorEntitesBySeniorDoctor(doctorEntity);
+        HospitalSpecializationEntity hospitalSpecializationEntity = doctorEntity.getHospitalSpecialization();
+        return doctorRepository.findAllBySpecialization(hospitalSpecializationEntity);
     }
 
     public DoctorEntity updatePassword(String email, String password) {

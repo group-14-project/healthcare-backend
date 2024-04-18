@@ -26,14 +26,12 @@ public class SeniorDoctorController {
 
     private final DoctorService doctor;
     private final JWTTokenReCheck jwtTokenReCheck;
-    private final JWTService jwtService;
     private final ConnectionService connection;
     private final ConsentService consent;
 
-    public SeniorDoctorController(DoctorService doctor, JWTTokenReCheck jwtTokenReCheck, JWTService jwtService, ConnectionService connection, ConsentService consent) {
+    public SeniorDoctorController(DoctorService doctor, JWTTokenReCheck jwtTokenReCheck, ConnectionService connection, ConsentService consent) {
         this.doctor = doctor;
         this.jwtTokenReCheck = jwtTokenReCheck;
-        this.jwtService = jwtService;
         this.connection = connection;
         this.consent = consent;
     }

@@ -89,7 +89,6 @@ public class JWTTokenReCheck {
         if(role == null || email==null || isExpired==null || !role.equals("ROLE_senior_doctor")){
             return null;
         }
-
         return doctor.checkJWT(email, jwtToken);
     }
 }

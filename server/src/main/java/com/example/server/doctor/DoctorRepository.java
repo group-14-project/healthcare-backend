@@ -16,9 +16,8 @@ public interface DoctorRepository extends JpaRepository<DoctorEntity, Integer> {
     "WHERE d.hospitalSpecialization = :hospitalSpecialization")
     List<String> findNamesByHospitalSpecialization(HospitalSpecializationEntity hospitalSpecialization);
 
-    @Query("select c from DoctorEntity c where c.hospitalSpecializationhead = :doctorEntity")
-    List<DoctorEntity> findDoctorEntitesBySeniorDoctor(DoctorEntity doctorEntity);
-
     @Query("select c from DoctorEntity c where c.hospitalSpecialization = :specializationEntity")
     List<DoctorEntity> findAllBySpecialization(HospitalSpecializationEntity specializationEntity);
+
+
 }
