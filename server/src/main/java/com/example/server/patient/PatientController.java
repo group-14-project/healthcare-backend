@@ -2,6 +2,7 @@ package com.example.server.patient;
 
 import com.example.server.aws.AwsServiceImplementation;
 import com.example.server.aws.EncryptFile;
+import com.example.server.aws.FileTypeEnum;
 import com.example.server.connection.ConnectionEntity;
 import com.example.server.connection.ConnectionService;
 import com.example.server.consent.ConsentEntity;
@@ -23,6 +24,7 @@ import lombok.val;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -344,12 +346,11 @@ public class   PatientController {
 
         }
         String randomUUID = UUID.randomUUID().toString();
-
-        String fileName = "Report-" + patientEntity.getFirstName() + "-" + randomUUID;
-
+//        String fileName = "Report-" + patientEntity.getFirstName() + "-" + randomUUID;
+        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
         String contentType = file.getContentType();
         InputStream inputStream = file.getInputStream();
-
+        long filesize = file.getSize();
         byte[] encryptedBytes = encryptFile.encryptFile(inputStream);
 
         // Create an InputStream from the encrypted content
@@ -396,11 +397,16 @@ public class   PatientController {
         ReportEntity reportEntity = report.findReportById(id);
         String bucketName = "adityavit36";// Download the encrypted file content
         val encryptedBody = awsServiceImplementation.downloadFile(bucketName,reportEntity.getFileName()); // Decrypt the file content
-
         byte[] decryptedBytes = encryptFile.decryptFile(encryptedBody.toByteArray());
-
         patient.setLastAccessTime(patientEntity.getEmail());
-        return ResponseEntity.ok().body(decryptedBytes);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentDispositionFormData("attachment", reportEntity.getFileName());
+        headers.setContentType(FileTypeEnum.fromFilename(reportEntity.getFileName()));
+        // Return decrypted file content as response body
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(decryptedBytes);
+//      return ResponseEntity.ok().body(decryptedBytes);
     }
 
 }
