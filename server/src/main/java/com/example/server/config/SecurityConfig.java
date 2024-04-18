@@ -35,9 +35,10 @@ public class SecurityConfig{
                 authorize.requestMatchers(HttpMethod.GET, "*/landingPage", "*/opdtimings", "*/profile", "/hospitals").permitAll()
                         .requestMatchers(HttpMethod.POST, "*/login", "*/signup", "*/loginotp", "*/signupotp").permitAll()
                         .requestMatchers("/patient/**").hasRole("patient")
-                        .requestMatchers("/doctor/**").hasRole("doctor")
-                        .requestMatchers("/doctor/**").hasRole("senior_doctor")
-                        .requestMatchers("/senior_doctor/**").hasRole("senior_doctor")
+//                        .requestMatchers("/doctor/**").hasRole("doctor")
+//                        .requestMatchers("/doctor/**", "/senior_doctor/**").hasRole("seniorDoctor")
+                        .requestMatchers("/doctor/**", "/senior_doctor/**").hasRole("seniorDoctor")
+                        .requestMatchers("/doctor/**").hasAnyRole("doctor", "seniorDoctor")
                         .requestMatchers("/hospital/**").hasRole("hospital")
 
                         .anyRequest().authenticated())

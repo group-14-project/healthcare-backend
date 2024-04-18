@@ -54,7 +54,7 @@ public class JWTTokenReCheck {
         String email = jwtMap.get("email");
         String isExpired = jwtMap.get("isExpired");
 
-        if(role == null || email==null || isExpired==null || (!role.equals("ROLE_doctor") && !role.equals("ROLE_senior_doctor"))){
+        if(role == null || email==null || isExpired==null || (!role.equals("ROLE_doctor") && !role.equals("ROLE_seniorDoctor"))){
             return null;
         }
 
@@ -86,7 +86,7 @@ public class JWTTokenReCheck {
         String email = jwtMap.get("email");
         String isExpired = jwtMap.get("isExpired");
 
-        if(role == null || email==null || isExpired==null || !role.equals("ROLE_senior_doctor")){
+        if(role == null || email==null || isExpired==null || !role.equals("ROLE_seniorDoctor")){
             return null;
         }
         return doctor.checkJWT(email, jwtToken);
