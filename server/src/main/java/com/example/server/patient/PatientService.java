@@ -36,23 +36,6 @@ public class PatientService {
         return patient;
     }
 
-//    public PatientDetailsRequest DetailsAdd(PatientDetailsRequest patientDto)
-//    {
-//        PatientEntity patient=patientRepo.findPatientEntitiesByEmail(patientDto.getEmail());
-//        patient.setFirstName(patientDto.getFirstName());
-//        patient.setLastName(patientDto.getLastName());
-//        patient.setCity(patientDto.getCity());
-//        patient.setWeight(patientDto.getWeight());
-//        patient.setGender(patientDto.getGender());
-//        patient.setAddress(patientDto.getAddress());
-//        patient.setHeight(patientDto.getHeight());
-//        patient.setPinCode(patientDto.getPinCode());
-//        patient.setBloodGroup(patientDto.getBloodGroup());
-//        patient.setPhoneNumber(patientDto.getPhoneNumber());
-//        PatientEntity detailsPatient=patientRepo.save(patient);
-//        return this.modelMapper.map(detailsPatient,PatientDetailsRequest.class);
-//    }
-
 
     public static class PatientConflictException extends SecurityException{
         public PatientConflictException(){
@@ -186,6 +169,11 @@ public class PatientService {
             return null;
         }
         return patient;
+    }
+
+    public void expireJWTfromTable(String email) {
+        PatientEntity patient = patientRepo.findPatientEntitiesByEmail(email);
+        patient.setJwtToken("Expired");
     }
 
 }

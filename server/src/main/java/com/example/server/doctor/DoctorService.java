@@ -59,6 +59,9 @@ public class DoctorService {
     public DoctorEntity checkJWT(String email, String jwtToken) {
         DoctorEntity doctor = doctorRepository.findDoctorEntitiesByEmail(email);
         if(doctor==null || !Objects.equals(doctor.getJwtToken(), jwtToken)){
+            if(doctor!=null){
+                makeDoctorOffline(email);
+            }
             return null;
         }
         return checkAccessTime(doctor.getEmail());
@@ -220,5 +223,15 @@ public class DoctorService {
             response.add(hospitalResponse);
         }
         return response;
+    }
+
+    public void makeDoctorOffline(String email){
+        DoctorEntity doctor = doctorRepository.findDoctorEntitiesByEmail(email);
+        doctor.setActiveStatus(0);
+    }
+
+    public void expireJWTfromTable(String email){
+        DoctorEntity doctor = doctorRepository.findDoctorEntitiesByEmail(email);
+        doctor.setJwtToken("Expired");
     }
 }

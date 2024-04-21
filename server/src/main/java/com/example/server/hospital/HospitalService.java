@@ -152,4 +152,8 @@ public class HospitalService {
     }
 
 
+    public void expireJWTfromTable(String email) {
+        HospitalEntity hospital = hospitalRepository.findByEmail(email);
+        hospital.setJwtToken("Expired");
+    }
 }

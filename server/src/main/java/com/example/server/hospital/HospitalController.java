@@ -13,6 +13,7 @@ import com.example.server.hospitalSpecialization.HospitalSpecializationEntity;
 import com.example.server.hospitalSpecialization.HospitalSpecializationService;
 import com.example.server.jwtToken.JWTService;
 import com.example.server.jwtToken.JWTTokenReCheck;
+import com.example.server.patient.PatientEntity;
 import com.example.server.patient.PatientService;
 import com.example.server.specialization.SpecializationEntity;
 import com.example.server.specialization.SpecializationService;
@@ -22,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -210,6 +212,20 @@ public class HospitalController
         List<HospitalSpecializationEntity> hospitalSpecializationEntities = hospitalSpecialization.getSpecializationByHospital(hospitalEntity);
         List<DepartmentDto> departmentDtos = hospitalSpecialization.getDepartmentDoctors(hospitalSpecializationEntities);
         return ResponseEntity.ok(departmentDtos);
+    }
+
+    @GetMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request){
+        HospitalEntity hospitalEntity = jwtTokenReCheck.checkJWTAndSessionHospital(request);
+        if (hospitalEntity == null) {
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("You have been logged out");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        hospital.expireJWTfromTable(hospitalEntity.getEmail());
+        SuccessMessage successMessage = new SuccessMessage();
+        successMessage.setSuccessMessage("You have been logged out");
+        return ResponseEntity.ok(successMessage);
     }
 
 }

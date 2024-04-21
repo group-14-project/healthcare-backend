@@ -19,6 +19,8 @@ import com.example.server.jwtToken.JWTService;
 import com.example.server.jwtToken.JWTTokenReCheck;
 import com.example.server.report.ReportEntity;
 import com.example.server.report.ReportService;
+import com.example.server.reviews.ReviewEntity;
+import com.example.server.reviews.ReviewService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.val;
 import org.springframework.http.HttpHeaders;
@@ -29,6 +31,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
@@ -49,7 +52,8 @@ public class   PatientController {
     private final DoctorRepository doctorRepository;
     private final ConnectionService connection;
     private final ConsultationService consultation;
-    public PatientController(PatientService patient, EncryptFile encryptFile, EmailSender emailSender, AwsServiceImplementation awsServiceImplementation, JWTService jwtService, ReportService report, JWTTokenReCheck jwtTokenReCheck, ConsentService consent, DoctorRepository doctorRepository, ConnectionService connection, ConsultationService consultation){
+    private final ReviewService reviewService;
+    public PatientController(PatientService patient, EncryptFile encryptFile, EmailSender emailSender, AwsServiceImplementation awsServiceImplementation, JWTService jwtService, ReportService report, JWTTokenReCheck jwtTokenReCheck, ConsentService consent, DoctorRepository doctorRepository, ConnectionService connection, ConsultationService consultation, ReviewService reviewService){
         this.patient = patient;
         this.encryptFile = encryptFile;
         this.emailSender = emailSender;
@@ -61,6 +65,7 @@ public class   PatientController {
         this.doctorRepository = doctorRepository;
         this.connection = connection;
         this.consultation = consultation;
+        this.reviewService = reviewService;
     }
 
 
@@ -398,11 +403,72 @@ public class   PatientController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentDispositionFormData("attachment", reportEntity.getFileName());
         headers.setContentType(FileTypeEnum.fromFilename(reportEntity.getFileName()));
+
+        patient.setLastAccessTime(patientEntity.getEmail());
         // Return decrypted file content as response body
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(decryptedBytes);
 //      return ResponseEntity.ok().body(decryptedBytes);
+    }
+
+    @PostMapping("/addReview")
+    public ResponseEntity<?> addReview(@RequestBody AddReviewRequest reviewRequest, HttpServletRequest request){
+        PatientEntity patientEntity = jwtTokenReCheck.checkJWTAndSessionPatient(request);
+        if(patientEntity==null)
+        {
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("Your Session has expired. Please Login again");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+
+        ConnectionEntity connectionEntity = connection.findConnection(reviewRequest.getDoctorEmail(), patientEntity.getEmail());
+        if(connectionEntity==null){
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("You have never consulted this doctor so you cant review them");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        ReviewEntity review = reviewService.addReview(connectionEntity, reviewRequest.getReview());
+        if(review==null){
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("There was an error registering the review please try again");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        patient.setLastAccessTime(patientEntity.getEmail());
+        SuccessMessage successMessage = new SuccessMessage();
+        successMessage.setSuccessMessage("Review has been uploaded Successfully");
+        return ResponseEntity.ok(successMessage);
+    }
+
+    @PostMapping("/viewReviews")
+    public ResponseEntity<?> viewReviewsOfaDoctor(@RequestBody EmailRequest emailRequest, HttpServletRequest request){
+        PatientEntity patientEntity = jwtTokenReCheck.checkJWTAndSessionPatient(request);
+        if(patientEntity==null)
+        {
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("Your Session has expired. Please Login again");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+
+        DoctorEntity doctorEntity = doctorRepository.findDoctorEntitiesByEmail(emailRequest.getEmail());
+        List<ConnectionEntity> connectionEntities = connection.findAllConnectionsByDoctor(doctorEntity);
+        List<ViewReviewsResponse> viewReviewsResponses = reviewService.viewReviewsByConnection(connectionEntities);
+        patient.setLastAccessTime(doctorEntity.getEmail());
+        return ResponseEntity.ok(viewReviewsResponses);
+    }
+
+    @GetMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request) throws IOException {
+        PatientEntity patientEntity = jwtTokenReCheck.checkJWTAndSessionPatient(request);
+        if (patientEntity == null) {
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("You have been logged out");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        patient.expireJWTfromTable(patientEntity.getEmail());
+        SuccessMessage successMessage = new SuccessMessage();
+        successMessage.setSuccessMessage("You have been logged out");
+        return ResponseEntity.ok(successMessage);
     }
 
 }

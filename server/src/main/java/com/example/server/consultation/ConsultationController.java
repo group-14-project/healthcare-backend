@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/consultation")
+@RequestMapping("/doctor")
 @CrossOrigin
 public class ConsultationController {
     private final ConsultationService consultation;
@@ -16,6 +16,7 @@ public class ConsultationController {
         this.consultation = consultation;
     }
 
+    //TODO Shift to doctor controller
     @PostMapping("/addPrescriptionRecordLink/{id}")
     public ResponseEntity<Void> addPrescriptionRecordLink(@RequestBody AddPrescriptionRecordingLink addPrescriptionRecordingLink, @PathVariable Integer id){
         ConsultationEntity consultationEntity = consultation.setPrescriptionRecordingLink(addPrescriptionRecordingLink.getPrescription(),

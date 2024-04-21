@@ -10,11 +10,13 @@ import com.example.server.dto.request.*;
 import com.example.server.dto.response.*;
 import com.example.server.emailOtpPassword.EmailSender;
 import com.example.server.errorOrSuccessMessageResponse.ErrorMessage;
+import com.example.server.errorOrSuccessMessageResponse.SuccessMessage;
 import com.example.server.hospitalSpecialization.HospitalSpecializationEntity;
 import com.example.server.jwtToken.JWTService;
 import com.example.server.jwtToken.JWTTokenReCheck;
 import com.example.server.patient.PatientEntity;
 import com.example.server.patient.PatientService;
+import com.example.server.reviews.ReviewService;
 import com.example.server.webSocket.DoctorStatusScheduler;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
@@ -40,8 +42,9 @@ public class DoctorController {
     private final ConnectionService connection;
     private final ConsentService consent;
     private final ConsultationService consultation;
+    private final ReviewService review;
 
-    public DoctorController(DoctorService doctor, JWTService jwtService, JWTTokenReCheck jwtTokenReCheck, PatientService patient, DoctorStatusScheduler doctorStatusScheduler, EmailSender emailSender, ConnectionService connection, ConsentService consent, ConsultationService consultation) {
+    public DoctorController(DoctorService doctor, JWTService jwtService, JWTTokenReCheck jwtTokenReCheck, PatientService patient, DoctorStatusScheduler doctorStatusScheduler, EmailSender emailSender, ConnectionService connection, ConsentService consent, ConsultationService consultation, ReviewService reviewService) {
         this.doctor = doctor;
         this.jwtService = jwtService;
         this.jwtTokenReCheck = jwtTokenReCheck;
@@ -51,6 +54,7 @@ public class DoctorController {
         this.connection = connection;
         this.consent = consent;
         this.consultation = consultation;
+        this.review = reviewService;
     }
 
     @PostMapping("/login")
@@ -97,8 +101,9 @@ public class DoctorController {
     }
 
     @PostMapping("/loginotp")
-    ResponseEntity<?> loginDoctoremail(@RequestBody LoginUserRequest body){
+    ResponseEntity<?> loginDoctoremail(@RequestBody LoginUserRequest body) throws IOException {
         if(!doctor.checkDoctor(body.getUser().getEmail())){
+            doctorStatusScheduler.sendDoctorStatusUpdate();
             ErrorMessage errorMessage = new ErrorMessage();
             errorMessage.setErrorMessage("Email ID is not Registered as a Doctor.");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
@@ -115,15 +120,18 @@ public class DoctorController {
                 currentDoctor.getFirstName()
         );
         DoctorEntity doctor1 = doctor.updateOtp(otp, currentDoctor.getEmail());
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        SuccessMessage successMessage = new SuccessMessage();
+        successMessage.setSuccessMessage("OTP Sent to Email Successfully");
+        return ResponseEntity.ok(successMessage);
     }
 
 
     //JWTToken done
     @GetMapping("/departmentDetails")
-    public ResponseEntity<?> getDepartmentOfDoctorId(HttpServletRequest request) {
+    public ResponseEntity<?> getDepartmentOfDoctorId(HttpServletRequest request) throws IOException {
         DoctorEntity doctorEntity = jwtTokenReCheck.checkJWTAndSessionDoctor(request);
         if(doctorEntity==null){
+            doctorStatusScheduler.sendDoctorStatusUpdate();
             ErrorMessage errorMessage = new ErrorMessage();
             errorMessage.setErrorMessage("Your Session has expired. Please Login again");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
@@ -144,9 +152,10 @@ public class DoctorController {
 
 
     @GetMapping("/viewHospitalsAndDoctors")
-    public ResponseEntity<?> getHospitalsDoctors(HttpServletRequest request){
+    public ResponseEntity<?> getHospitalsDoctors(HttpServletRequest request) throws IOException {
         DoctorEntity mainDoctor = jwtTokenReCheck.checkJWTAndSessionDoctor(request);
         if(mainDoctor==null){
+            doctorStatusScheduler.sendDoctorStatusUpdate();
             ErrorMessage errorMessage = new ErrorMessage();
             errorMessage.setErrorMessage("Your Session has expired. Please Login again");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
@@ -168,9 +177,10 @@ public class DoctorController {
 
     //JWT Done
     @PostMapping("/registerConsent")
-    public ResponseEntity<?> registerConsent(@RequestBody DoctorPatientConsent doctorPatientConsent, HttpServletRequest request) {
+    public ResponseEntity<?> registerConsent(@RequestBody DoctorPatientConsent doctorPatientConsent, HttpServletRequest request) throws IOException {
         DoctorEntity doctorEntity = jwtTokenReCheck.checkJWTAndSessionDoctor(request);
         if(doctorEntity==null){
+            doctorStatusScheduler.sendDoctorStatusUpdate();
             ErrorMessage errorMessage = new ErrorMessage();
             errorMessage.setErrorMessage("Your Session has expired. Please Login again");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
@@ -217,6 +227,7 @@ public class DoctorController {
     ResponseEntity<?> updatePassword(@RequestBody PasswordUpdateRequest body, HttpServletRequest request) throws IOException {
         DoctorEntity doctorEntity = jwtTokenReCheck.checkJWTAndSessionDoctor(request);
         if(doctorEntity==null){
+            doctorStatusScheduler.sendDoctorStatusUpdate();
             ErrorMessage errorMessage = new ErrorMessage();
             errorMessage.setErrorMessage("Your Session has expired. Please Login again");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
@@ -252,14 +263,13 @@ public class DoctorController {
         headers.setBearerAuth(jwtToken);
 
         return ResponseEntity.ok().headers(headers).body(doctorLoginResponse);
-
-
     }
 
     @GetMapping("/patientsLastAppointment")
-    public ResponseEntity<?> getPatientNameAndLastDetails(HttpServletRequest request){
+    public ResponseEntity<?> getPatientNameAndLastDetails(HttpServletRequest request) throws IOException {
         DoctorEntity doctorEntity = jwtTokenReCheck.checkJWTAndSessionDoctor(request);
         if(doctorEntity==null){
+            doctorStatusScheduler.sendDoctorStatusUpdate();
             ErrorMessage errorMessage = new ErrorMessage();
             errorMessage.setErrorMessage("Your Session has expired. Please Login again");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
@@ -279,9 +289,40 @@ public class DoctorController {
         }
 
         doctor.setLastAccessTime(doctorEntity.getEmail());
-
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/viewReviews")
+    public ResponseEntity<?> viewReviews(HttpServletRequest request) throws IOException {
+        DoctorEntity doctorEntity = jwtTokenReCheck.checkJWTAndSessionDoctor(request);
+        if(doctorEntity==null){
+
+            doctorStatusScheduler.sendDoctorStatusUpdate();
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("Your Session has expired. Please Login again");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+
+        List<ConnectionEntity> connectionEntities = connection.findAllConnectionsByDoctor(doctorEntity);
+        List<ViewReviewsResponse> viewReviewsResponses = review.viewReviewsByConnection(connectionEntities);
+        doctor.setLastAccessTime(doctorEntity.getEmail());
+        return ResponseEntity.ok(viewReviewsResponses);
+    }
+
+    @GetMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request) throws IOException {
+        DoctorEntity doctorEntity = jwtTokenReCheck.checkJWTAndSessionDoctor(request);
+        if (doctorEntity == null) {
+            doctorStatusScheduler.sendDoctorStatusUpdate();
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("You have been logged out");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        doctor.makeDoctorOffline(doctorEntity.getEmail());
+        doctor.expireJWTfromTable(doctorEntity.getEmail());
+        SuccessMessage successMessage = new SuccessMessage();
+        successMessage.setSuccessMessage("You have been logged out");
+        return ResponseEntity.ok(successMessage);
+    }
 
 }
