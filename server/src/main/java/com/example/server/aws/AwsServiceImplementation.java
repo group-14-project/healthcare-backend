@@ -24,7 +24,7 @@ public class AwsServiceImplementation implements AwsService {
     @Override
     public boolean uploadFile(
             final String bucketName,
-            final String keyName,
+            final String fileName,
             final Long contentLength,
             final String contentType,
             final InputStream value
@@ -33,7 +33,7 @@ public class AwsServiceImplementation implements AwsService {
         metadata.setContentLength(contentLength);
         metadata.setContentType(contentType);
     try {
-        s3Client.putObject(bucketName, keyName, value, metadata);
+        s3Client.putObject(bucketName, fileName, value, metadata);
         return true;
     }
     catch (AmazonS3Exception e) {
