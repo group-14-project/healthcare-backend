@@ -3,12 +3,14 @@ package com.example.server.hospitalSpecialization;
 import com.example.server.doctor.DoctorEntity;
 import com.example.server.doctor.DoctorService;
 import com.example.server.dto.request.DoctorDto;
+import com.example.server.dto.response.DepartmentDto;
 import com.example.server.hospital.HospitalEntity;
 import com.example.server.hospital.HospitalService;
 import com.example.server.specialization.SpecializationEntity;
 import com.example.server.specialization.SpecializationService;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -66,5 +68,21 @@ public class HospitalSpecializationService {
 
     public HospitalSpecializationEntity findByHospitalAndSpecialization(HospitalEntity hospitalEntity, SpecializationEntity specializationEntity) {
         return hospitalSpecializationRepository.findByHospitalIdAndSpecializationId(hospitalEntity.getId(), specializationEntity.getId());
+    }
+
+    public List<DepartmentDto> getDepartmentDoctors(List<HospitalSpecializationEntity> hospitalSpecializationEntities) {
+        List<DepartmentDto> departmentDtos = new ArrayList<>();
+
+        for (HospitalSpecializationEntity hospitalSpecialization : hospitalSpecializationEntities) {
+            String headDoctorFirstName = hospitalSpecialization.getHeadDoctor().getFirstName();
+            String headDoctorLastName = hospitalSpecialization.getHeadDoctor().getLastName();
+            String seniorDoctor = headDoctorFirstName + ' ' + headDoctorLastName;
+            String specialization = hospitalSpecialization.getSpecialization().getName();
+            List<String> doctors = doctorService.getDoctorsFromSameSpecialization(hospitalSpecialization);
+
+            DepartmentDto departmentDto = new DepartmentDto(seniorDoctor, specialization, doctors);
+            departmentDtos.add(departmentDto);
+        }
+        return departmentDtos;
     }
 }

@@ -3,6 +3,7 @@ import com.example.server.doctor.DoctorEntity;
 import com.example.server.doctor.DoctorRepository;
 import com.example.server.doctor.DoctorService;
 import com.example.server.dto.request.*;
+import com.example.server.dto.response.DepartmentDto;
 import com.example.server.dto.response.DoctorDetailsResponse;
 import com.example.server.dto.response.HospitalResponse;
 import com.example.server.emailOtpPassword.EmailSender;
@@ -21,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -195,6 +197,19 @@ public class HospitalController
         SuccessMessage successMessage = new SuccessMessage();
         successMessage.setSuccessMessage("Department has been registered successfully");
         return ResponseEntity.ok(successMessage);
+    }
+
+    @GetMapping("/departments")
+    public ResponseEntity<?> viewDepartments(HttpServletRequest request){
+        HospitalEntity hospitalEntity = jwtTokenReCheck.checkJWTAndSessionHospital(request);
+        if(hospitalEntity==null){
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("Your session has expired. Please Login again");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        List<HospitalSpecializationEntity> hospitalSpecializationEntities = hospitalSpecialization.getSpecializationByHospital(hospitalEntity);
+        List<DepartmentDto> departmentDtos = hospitalSpecialization.getDepartmentDoctors(hospitalSpecializationEntities);
+        return ResponseEntity.ok(departmentDtos);
     }
 
 }
