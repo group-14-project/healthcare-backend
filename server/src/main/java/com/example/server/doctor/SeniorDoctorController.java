@@ -13,6 +13,7 @@ import com.example.server.jwtToken.JWTService;
 import com.example.server.jwtToken.JWTTokenReCheck;
 import com.example.server.patient.PatientEntity;
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.catalina.filters.ExpiresFilter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

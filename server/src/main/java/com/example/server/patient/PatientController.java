@@ -44,13 +44,9 @@ public class   PatientController {
     private final ReportService report;
     private final JWTTokenReCheck jwtTokenReCheck;
     private final ConsentService consent;
-
     private final DoctorRepository doctorRepository;
-
     private final ConnectionService connection;
-
     private final ConsultationService consultation;
-
     public PatientController(PatientService patient, EncryptFile encryptFile, EmailSender emailSender, AwsServiceImplementation awsServiceImplementation, JWTService jwtService, ReportService report, JWTTokenReCheck jwtTokenReCheck, ConsentService consent, DoctorRepository doctorRepository, ConnectionService connection, ConsultationService consultation){
         this.patient = patient;
         this.encryptFile = encryptFile;
