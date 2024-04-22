@@ -1,11 +1,12 @@
 package com.example.server.hospital;
+import com.example.server.connection.ConnectionEntity;
+import com.example.server.connection.ConnectionService;
+import com.example.server.consultation.ConsultationService;
 import com.example.server.doctor.DoctorEntity;
 import com.example.server.doctor.DoctorRepository;
 import com.example.server.doctor.DoctorService;
 import com.example.server.dto.request.*;
-import com.example.server.dto.response.DepartmentDto;
-import com.example.server.dto.response.DoctorDetailsResponse;
-import com.example.server.dto.response.HospitalResponse;
+import com.example.server.dto.response.*;
 import com.example.server.emailOtpPassword.EmailSender;
 import com.example.server.errorOrSuccessMessageResponse.ErrorMessage;
 import com.example.server.errorOrSuccessMessageResponse.SuccessMessage;
@@ -13,8 +14,8 @@ import com.example.server.hospitalSpecialization.HospitalSpecializationEntity;
 import com.example.server.hospitalSpecialization.HospitalSpecializationService;
 import com.example.server.jwtToken.JWTService;
 import com.example.server.jwtToken.JWTTokenReCheck;
-import com.example.server.patient.PatientEntity;
 import com.example.server.patient.PatientService;
+import com.example.server.reviews.ReviewService;
 import com.example.server.specialization.SpecializationEntity;
 import com.example.server.specialization.SpecializationService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,8 +24,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -35,22 +34,27 @@ public class HospitalController
     private final HospitalService hospital;
     private final DoctorService doctorService;
     private final EmailSender emailSender;
-
+    private final ConnectionService connection;
     private final SpecializationService specializationService;
     private final HospitalSpecializationService hospitalSpecialization;
     private final DoctorRepository doctorRepository;
     private final JWTService jwtService;
     private final JWTTokenReCheck jwtTokenReCheck;
-    public HospitalController(HospitalService hospitalService, HospitalSpecializationService hospitalSpecialization, DoctorService doctorService, EmailSender emailSender, SpecializationService specializationService, DoctorRepository doctorRepository, JWTService jwtService, JWTTokenReCheck jwtTokenReCheck)
+    private final ReviewService review;
+    private final ConsultationService consultation;
+    public HospitalController(HospitalService hospitalService, HospitalSpecializationService hospitalSpecialization, DoctorService doctorService, EmailSender emailSender, ConnectionService connection, SpecializationService specializationService, DoctorRepository doctorRepository, JWTService jwtService, JWTTokenReCheck jwtTokenReCheck, ReviewService review, ConsultationService consultation)
     {
         this.hospital = hospitalService;
         this.hospitalSpecialization = hospitalSpecialization;
         this.doctorService = doctorService;
         this.emailSender = emailSender;
+        this.connection = connection;
         this.specializationService = specializationService;
         this.doctorRepository = doctorRepository;
         this.jwtService = jwtService;
         this.jwtTokenReCheck = jwtTokenReCheck;
+        this.review = review;
+        this.consultation = consultation;
     }
 
     //JWT Token done
@@ -66,14 +70,20 @@ public class HospitalController
             errorMessage.setErrorMessage("Wrong OTP or Wrong Email");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
         }
+        List<DoctorDetailsResponse> doctors=hospital.allDoctorsOfHospital(newHospital);
+        List<ConnectionEntity> connectionEntities = connection.findAllConnectionByHospital(newHospital);
+        List<ViewReviewsResponse> viewReviewsResponses = review.viewReviewsByConnection(connectionEntities);
+        List<EachDayCount> eachDayCounts=consultation.sendEachDayCount(connectionEntities);
+
         HospitalResponse hospitalResponse=new HospitalResponse();
         hospitalResponse.setHospitalName(newHospital.getHospitalName());
         hospitalResponse.setAddress(newHospital.getAddress());
         hospitalResponse.setEmail(newHospital.getEmail());
         hospitalResponse.setFirstTimeLogin(newHospital.isFirstTimeLogin());
         hospitalResponse.setCity(newHospital.getCity());
-        List<DoctorDetailsResponse> doctors=hospital.allDoctorsOfHospital(newHospital);
         hospitalResponse.setDoctors(doctors);
+        hospitalResponse.setReviewsResponses(viewReviewsResponses);
+        hospitalResponse.setEachDayCounts(eachDayCounts);
 
         String jwtToken = jwtService.createJwt(newHospital.getEmail(), newHospital.getRole());
         hospital.setJwtToken(jwtToken, newHospital.getEmail());

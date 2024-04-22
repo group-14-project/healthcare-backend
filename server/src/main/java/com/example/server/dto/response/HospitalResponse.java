@@ -26,6 +26,12 @@ public class HospitalResponse
     @JsonProperty("doctors")
     private  List<DoctorDetailsResponse> doctors;
 
+    @JsonProperty("reviews")
+    private List<ViewReviewsResponse> reviewsResponses;
+
+    @JsonProperty("eachDayCounts")
+    private List<EachDayCount> eachDayCounts;
+
     // No-argument constructor
     public HospitalResponse() {
     }

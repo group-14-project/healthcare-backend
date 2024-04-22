@@ -2,12 +2,14 @@ package com.example.server.connection;
 
 import com.example.server.doctor.DoctorEntity;
 import com.example.server.doctor.DoctorService;
+import com.example.server.hospital.HospitalEntity;
 import com.example.server.patient.PatientController;
 import com.example.server.patient.PatientEntity;
 import com.example.server.patient.PatientService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ConnectionService {
@@ -66,5 +68,12 @@ public class ConnectionService {
 
     public List<ConnectionEntity> findAllConnectionsByDoctorList(List<DoctorEntity> doctorEntities) {
         return connectionRepo.findAllByDoctorList(doctorEntities);
+    }
+
+    public List<ConnectionEntity> findAllConnectionByHospital(HospitalEntity newHospital) {
+        List<ConnectionEntity> connectionEntities = connectionRepo.findAll();
+        return connectionEntities.stream()
+                .filter(connection -> connection.getDoctor().getHospitalSpecialization().getHospital().equals(newHospital))
+                .collect(Collectors.toList());
     }
 }
