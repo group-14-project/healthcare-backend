@@ -73,7 +73,7 @@ public class ConnectionService {
     public List<ConnectionEntity> findAllConnectionByHospital(HospitalEntity newHospital) {
         List<ConnectionEntity> connectionEntities = connectionRepo.findAll();
         return connectionEntities.stream()
-                .filter(connection -> connection.getDoctor().getHospitalSpecialization().getHospital().equals(newHospital))
+                .filter(connection -> connection.getDoctor().getHospitalSpecialization().getHospital().getHospitalName().equals(newHospital.getHospitalName()))
                 .collect(Collectors.toList());
     }
 }
