@@ -113,4 +113,12 @@ public class SignalingController {
         simpMessagingTemplate.convertAndSendToUser(jsonObject.getString("initiatedBy"), "/topic/disconnectCall", call);
     }
 
+    @MessageMapping("/rejectCall")
+    public void RejectCall(String call){
+        JSONObject jsonObject = new JSONObject(call);
+        JSONObject jsonObjectTo = new JSONObject(jsonObject.getString("initiatedBy"));
+
+        simpMessagingTemplate.convertAndSendToUser(jsonObjectTo.getString("caller"), "/topic/rejectCall", call);
+    }
+
 }
