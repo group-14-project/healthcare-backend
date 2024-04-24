@@ -150,6 +150,13 @@ public class DoctorService {
                 .collect(Collectors.toList());
     }
 
+    public List<DoctorDetailsResponse> getDoctorsInSpecialization(HospitalSpecializationEntity hospitalSpecialization) {
+        List<DoctorEntity> allDoctors = doctorRepository.findAllBySpecialization(hospitalSpecialization);
+        return allDoctors.stream()
+                .map(this::mapToDoctorDetailsResponse)
+                .collect(Collectors.toList());
+    }
+
     private DoctorDetailsResponse mapToDoctorDetailsResponse(DoctorEntity doctorEntity) {
         DoctorDetailsResponse doctorDetailsResponse = new DoctorDetailsResponse();
         doctorDetailsResponse.setFirstName(doctorEntity.getFirstName());

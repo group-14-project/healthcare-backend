@@ -6,21 +6,14 @@ import lombok.*;
 
 import java.util.List;
 
-@Getter
-@Setter
+@Data
 public class DepartmentDto {
     @JsonProperty("seniorDoctor")
-    private final String seniorDoctor;
+    private final DoctorDetailsResponse seniorDoctor;
 
     @JsonProperty("specialization")
     private final String specialization;
 
     @JsonProperty("doctors")
-    private final List<String> doctors;
-
-    public DepartmentDto(String seniorDoctor, String specialization, List<String> doctors) {
-        this.doctors = doctors;
-        this.seniorDoctor =seniorDoctor;
-        this.specialization = specialization;
-    }
+    private final List<DoctorDetailsResponse> doctors;
 }

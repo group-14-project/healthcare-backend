@@ -4,6 +4,7 @@ import com.example.server.doctor.DoctorEntity;
 import com.example.server.doctor.DoctorService;
 import com.example.server.dto.request.DoctorDto;
 import com.example.server.dto.response.DepartmentDto;
+import com.example.server.dto.response.DoctorDetailsResponse;
 import com.example.server.hospital.HospitalEntity;
 import com.example.server.hospital.HospitalService;
 import com.example.server.specialization.SpecializationEntity;
@@ -74,11 +75,19 @@ public class HospitalSpecializationService {
         List<DepartmentDto> departmentDtos = new ArrayList<>();
 
         for (HospitalSpecializationEntity hospitalSpecialization : hospitalSpecializationEntities) {
-            String headDoctorFirstName = hospitalSpecialization.getHeadDoctor().getFirstName();
-            String headDoctorLastName = hospitalSpecialization.getHeadDoctor().getLastName();
-            String seniorDoctor = headDoctorFirstName + ' ' + headDoctorLastName;
+            DoctorDetailsResponse seniorDoctor = new DoctorDetailsResponse();
+            seniorDoctor.setImageUrl(hospitalSpecialization.getHeadDoctor().getImageUrl());
+            seniorDoctor.setDoctorEmail(hospitalSpecialization.getHeadDoctor().getEmail());
+            seniorDoctor.setDegree(hospitalSpecialization.getHeadDoctor().getDegree());
+            seniorDoctor.setSpecialization(hospitalSpecialization.getSpecialization().getName());
+            seniorDoctor.setFirstName(hospitalSpecialization.getHeadDoctor().getFirstName());
+            seniorDoctor.setLastName(hospitalSpecialization.getHeadDoctor().getLastName());
+            seniorDoctor.setHospitalName(hospitalSpecialization.getHospital().getHospitalName());
+
             String specialization = hospitalSpecialization.getSpecialization().getName();
-            List<String> doctors = doctorService.getDoctorsFromSameSpecialization(hospitalSpecialization);
+
+
+            List<DoctorDetailsResponse> doctors = doctorService.getDoctorsInSpecialization(hospitalSpecialization);
 
             DepartmentDto departmentDto = new DepartmentDto(seniorDoctor, specialization, doctors);
             departmentDtos.add(departmentDto);

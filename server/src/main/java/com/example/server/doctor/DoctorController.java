@@ -150,16 +150,23 @@ public class DoctorController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
         }
         HospitalSpecializationEntity hospitalSpecialization = doctorEntity.getHospitalSpecialization();
-        //senior doctor name
-        String headDoctorFirstName = hospitalSpecialization.getHeadDoctor().getFirstName();
-        String headDoctorLastName = hospitalSpecialization.getHeadDoctor().getLastName();
-        String headDoctorName = headDoctorFirstName + ' ' + headDoctorLastName;
+
+        DoctorDetailsResponse seniorDoctor = new DoctorDetailsResponse();
+        seniorDoctor.setImageUrl(hospitalSpecialization.getHeadDoctor().getImageUrl());
+        seniorDoctor.setDoctorEmail(hospitalSpecialization.getHeadDoctor().getEmail());
+        seniorDoctor.setDegree(hospitalSpecialization.getHeadDoctor().getDegree());
+        seniorDoctor.setSpecialization(hospitalSpecialization.getSpecialization().getName());
+        seniorDoctor.setFirstName(hospitalSpecialization.getHeadDoctor().getFirstName());
+        seniorDoctor.setLastName(hospitalSpecialization.getHeadDoctor().getLastName());
+        seniorDoctor.setHospitalName(hospitalSpecialization.getHospital().getHospitalName());
 
         String currSpecialization = hospitalSpecialization.getSpecialization().getName();
 
-        List<String> doctors = doctor.getDoctorsFromSameSpecialization(hospitalSpecialization);
+        List<DoctorDetailsResponse> doctors = doctor.getDoctorsInSpecialization(hospitalSpecialization);
 
-        DepartmentDto departmentDto = new DepartmentDto(headDoctorName, currSpecialization, doctors);
+        DepartmentDto departmentDto = new DepartmentDto(seniorDoctor, currSpecialization, doctors);
+        doctor.setLastAccessTime(doctorEntity.getEmail());
+
         return ResponseEntity.ok(departmentDto);
     }
 
