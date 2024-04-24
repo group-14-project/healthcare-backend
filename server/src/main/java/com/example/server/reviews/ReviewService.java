@@ -18,11 +18,17 @@ public class ReviewService {
     }
 
     public ReviewEntity addReview(ConnectionEntity connection, String review){
-        ReviewEntity reviewEntity = new ReviewEntity();
-        reviewEntity.setReview(review);
-        reviewEntity.setConn1(connection);
-        reviewEntity.setLocalDateTime(LocalDateTime.now());
-        return reviewRepo.save(reviewEntity);
+        ReviewEntity reviewEntity1 = reviewRepo.findReviewByConnection(connection);
+        if(reviewEntity1==null){
+            ReviewEntity reviewEntity = new ReviewEntity();
+            reviewEntity.setReview(review);
+            reviewEntity.setConn1(connection);
+            reviewEntity.setLocalDateTime(LocalDateTime.now());
+            return reviewRepo.save(reviewEntity);
+        }
+        reviewEntity1.setReview(review);
+        reviewEntity1.setLocalDateTime(LocalDateTime.now());
+        return reviewRepo.save(reviewEntity1);
     }
 
     public List<ViewReviewsResponse> viewReviewsByConnection(List<ConnectionEntity> connectionEntities) {

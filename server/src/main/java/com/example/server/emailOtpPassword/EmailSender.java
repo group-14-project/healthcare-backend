@@ -227,4 +227,29 @@ public class EmailSender {
             }
         }
     }
+
+    public void sendRejectionEmailToDoctor(String email, String newDoctor, String patientName) {
+        try
+        {
+            MimeMessage mimeMailMessage = javaMailSender.createMimeMessage();
+            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMailMessage, true, "UTF8");
+
+            mimeMessageHelper.setTo(email);
+            mimeMessageHelper.setSubject("Arogyashala: Patient has been recommended");
+
+            String htmlContent = String.format("""
+            Hi,
+            The request to send details of Patient %s to Dr.%s has be rejected.
+            Get more info about it in the Arogyashala Application.
+            Regards,
+            Team Arogyashala
+            """,patientName, newDoctor);
+            mimeMessageHelper.setText(htmlContent);
+            javaMailSender.send(mimeMailMessage);
+        } catch (MessagingException e) {
+            // Notify the user about the error
+            String errorMessage = "An error occurred while sending the email. Please try again later.";
+            throw new RuntimeException(errorMessage, e);
+        }
+    }
 }

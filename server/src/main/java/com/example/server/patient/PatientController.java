@@ -348,6 +348,51 @@ public class   PatientController {
         return ResponseEntity.ok(successMessage);
     }
 
+    @PutMapping("/rejectConsent")
+    public ResponseEntity<?> rejectConsent(@RequestBody GiveConsentRequest giveConsentRequest, HttpServletRequest request) {
+        PatientEntity patientEntity = jwtTokenReCheck.checkJWTAndSessionPatient(request);
+        if (patientEntity == null) {
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("Your Session has expired. Please Login again");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+
+        ConsentEntity consentEntity = consent.getConsentById(giveConsentRequest.getConsentId());
+        if (consentEntity == null) {
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("Please Select Valid Options");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        PatientEntity newPatient = consentEntity.getConnect().getPatient();
+        if (newPatient != patientEntity) {
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("You are not authorized to access this");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        if (Objects.equals(consentEntity.getPatientConsent(), "rejected")) {
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("You have already rejected the consent");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        else if (Objects.equals(consentEntity.getPatientConsent(), "withdrawn")) {
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("You cannot reject, you have withdrawn first");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        else if (Objects.equals(consentEntity.getPatientConsent(), "accepted")) {
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("You cannot reject, you have accepted first");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        consent.rejectConsent(consentEntity.getId());
+        consent.sendRejectionEmailToNewDoctor(consentEntity);
+        patient.setLastAccessTime(patientEntity.getEmail());
+
+        SuccessMessage successMessage = new SuccessMessage();
+        successMessage.setSuccessMessage("The Consent to share the report has been withdrawn");
+        return ResponseEntity.ok(successMessage);
+    }
+
 
     @PostMapping(value = "/uploadReport", consumes = "multipart/form-data")
     public ResponseEntity<?> uploadFile(@ModelAttribute ReportUploadRequest reportUploadRequest, HttpServletRequest request) throws Exception {

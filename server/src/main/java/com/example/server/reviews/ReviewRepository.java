@@ -12,4 +12,7 @@ import java.util.Optional;
 public interface ReviewRepository extends JpaRepository<ReviewEntity, Integer> {
     @Query("select c from ReviewEntity c where c.conn1 in :connectionEntities")
     List<ReviewEntity> findAllByConnection(List<ConnectionEntity> connectionEntities);
+
+    @Query("select c from ReviewEntity  c where c.conn1 = :connection")
+    ReviewEntity findReviewByConnection(ConnectionEntity connection);
 }

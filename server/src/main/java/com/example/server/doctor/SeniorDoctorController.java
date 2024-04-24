@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/senior_doctor")
@@ -121,6 +122,11 @@ public class SeniorDoctorController {
             errorMessage.setErrorMessage("You are not authorized to access this");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
         }
+        if(consentEntity.getSeniorDoctorConsent()=="rejected" || consentEntity.getPatientConsent()=="rejected"){
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("This request was rejected before");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
         consent.giveDoctorConsent(consentEntity.getId());
         doctor.setLastAccessTime(newDoctor.getEmail());
 
@@ -131,4 +137,42 @@ public class SeniorDoctorController {
         return ResponseEntity.ok(successMessage);
     }
 
+    @PostMapping("/rejectConsent/{id}")
+    public ResponseEntity<?> rejectConsent(@PathVariable Integer id, HttpServletRequest request ) {
+        DoctorEntity doctorEntity = jwtTokenReCheck.checkJWTAndSessionSeniorDoctor(request);
+        if (doctorEntity == null) {
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("Your Session has expired. Please Login again");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+
+        ConsentEntity consentEntity = consent.getConsentById(id);
+        if (consentEntity == null) {
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("Please Select Valid Options");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        DoctorEntity newDoctor = consentEntity.getConnect().getDoctor().getHospitalSpecialization().getHeadDoctor();
+        if (newDoctor != doctorEntity) {
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("You are not authorized to access this");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        if (Objects.equals(consentEntity.getPatientConsent(), "accepted")) {
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("You have accepted it before you cannot reject now");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        } else if (Objects.equals(consentEntity.getPatientConsent(), "rejected")) {
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("This request was rejected before you cannot reject again");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        consent.rejectConsent(consentEntity.getId());
+        doctor.setLastAccessTime(newDoctor.getEmail());
+
+        consent.sendRejectionEmailToNewDoctor(consentEntity);
+        SuccessMessage successMessage = new SuccessMessage();
+        successMessage.setSuccessMessage("The Consent to share the report has been rejected");
+        return ResponseEntity.ok(successMessage);
+    }
 }
