@@ -217,19 +217,26 @@ public class DoctorController {
             errorMessage.setErrorMessage("Select a valid doctor");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
         }
+        ConsentEntity consentEntity1 = consent.getConsentByConnectionAndSeniorDoctor(connectionEntity, newDoctorEntity);
 
-        ConsentEntity consentEntity = new ConsentEntity();
-        consentEntity.setConnect(connectionEntity);
-        consentEntity.setSeniorDoctorConsent(false);
-        consentEntity.setPatientConsent(false);
-        consentEntity.setNewDoctor(newDoctorEntity);
-        consentEntity.setLocalDate(LocalDate.now());
-
-        ConsentEntity consentEntity1 = consent.saveConsent(consentEntity);
-        if(consentEntity1==null){
-            ErrorMessage errorMessage = new ErrorMessage();
-            errorMessage.setErrorMessage("Request for consent is already registered");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        if(consentEntity1==null) {
+            ConsentEntity consentEntity = new ConsentEntity();
+            consentEntity.setConnect(connectionEntity);
+            consentEntity.setSeniorDoctorConsent("pending");
+            consentEntity.setPatientConsent("pending");
+            consentEntity.setNewDoctor(newDoctorEntity);
+            consentEntity.setLocalDate(LocalDate.now());
+            consent.saveNewConsent(consentEntity);
+        }else{
+            if(Objects.equals(consentEntity1.getPatientConsent(), "rejected") || Objects.equals(consentEntity1.getSeniorDoctorConsent(), "rejected")) {
+                consentEntity1.setPatientConsent("pending");
+                consentEntity1.setSeniorDoctorConsent("pending");
+                consent.saveNewConsent(consentEntity1);
+            }else{
+                ErrorMessage errorMessage = new ErrorMessage();
+                errorMessage.setErrorMessage("The consent request already exist");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+            }
         }
         emailSender.sendConsentEmailToPatient(patientEntity.getEmail(),patientEntity.getFirstName(),doctorEntity.getFirstName(),newDoctorEntity.getFirstName());
         emailSender.sendConsentEmailToSrDoctor(doctorEntity.getHospitalSpecialization().getHeadDoctor().getEmail(),doctorEntity.getHospitalSpecialization().getHeadDoctor().getFirstName(),patientEntity.getFirstName(),doctorEntity.getFirstName(),newDoctorEntity.getFirstName());

@@ -1,6 +1,7 @@
 package com.example.server.consent;
 
 import com.example.server.connection.ConnectionEntity;
+import com.example.server.doctor.DoctorEntity;
 import com.example.server.emailOtpPassword.EmailSender;
 import com.example.server.patient.PatientEntity;
 import org.springframework.stereotype.Service;
@@ -9,6 +10,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,18 +24,7 @@ public class ConsentService {
         this.emailSender = emailSender;
     }
 
-    public ConsentEntity saveConsent(ConsentEntity consentEntity) {
-        ConsentEntity currConsent = consentRepo.findByConnectAndNewDoctor(consentEntity.getConnect(), consentEntity.getNewDoctor());
-        if(currConsent!=null && !currConsent.isPatientConsent() && !currConsent.isSeniorDoctorConsent()){
-            return null;
-        }
-        if(currConsent!=null){
-            currConsent.setPatientConsent(false);
-            currConsent.setLocalDate(LocalDate.now());
-            currConsent.setSeniorDoctorConsent(false);
-            currConsent.setFirstTimeWithdraw(false);
-            return consentRepo.save(currConsent);
-        }
+    public ConsentEntity saveNewConsent(ConsentEntity consentEntity) {
         return consentRepo.save(consentEntity);
     }
 
@@ -55,14 +46,13 @@ public class ConsentService {
 
     public void givePatientConsent(Integer id) {
         ConsentEntity consentEntity = consentRepo.findConsentById(id);
-        consentEntity.setPatientConsent(true);
+        consentEntity.setPatientConsent("accepted");
         consentRepo.save(consentEntity);
     }
 
     public void withdrawPatientConsent(Integer id) {
         ConsentEntity consentEntity = consentRepo.findConsentById(id);
-        consentEntity.setPatientConsent(false);
-        consentEntity.setSeniorDoctorConsent(false);
+        consentEntity.setPatientConsent("withdrawn");
         consentRepo.save(consentEntity);
     }
 
@@ -79,7 +69,7 @@ public class ConsentService {
     }
 
     public void sendApprovalEmailToNewDoctor(ConsentEntity consentEntity) {
-        if(consentEntity.isPatientConsent() && consentEntity.isSeniorDoctorConsent()){
+        if(Objects.equals(consentEntity.getPatientConsent(), "accepted") && Objects.equals(consentEntity.getSeniorDoctorConsent(), "accepted")){
             emailSender.sendApprovalEmailNewDoctor(consentEntity.getNewDoctor().getEmail(),
                     consentEntity.getConnect().getPatient().getFirstName(),
                     consentEntity.getConnect().getDoctor().getFirstName(),
@@ -90,18 +80,17 @@ public class ConsentService {
 
     public List<ConsentEntity> findPendingConsentBySrDoctor(List<ConsentEntity> consentEntities) {
         return consentEntities.stream()
-                .filter(consent -> !consent.isSeniorDoctorConsent()).sorted(Comparator.comparing(ConsentEntity::getLocalDate)).collect(Collectors.toList());
+                .filter(consent -> Objects.equals(consent.getSeniorDoctorConsent(), "pending")).sorted(Comparator.comparing(ConsentEntity::getLocalDate)).collect(Collectors.toList());
     }
 
     public List<ConsentEntity> findApprovedConsentBySrDoctor(List<ConsentEntity> consentEntities) {
         return consentEntities.stream()
-                .filter(ConsentEntity::isSeniorDoctorConsent).sorted(Comparator.comparing(ConsentEntity::getLocalDate)).collect(Collectors.toList());
-
+                .filter(consent -> Objects.equals(consent.getSeniorDoctorConsent(), "accepted")).sorted(Comparator.comparing(ConsentEntity::getLocalDate)).collect(Collectors.toList());
     }
 
     public void giveDoctorConsent(Integer id) {
         ConsentEntity consentEntity = consentRepo.findConsentById(id);
-        consentEntity.setSeniorDoctorConsent(true);
+        consentEntity.setSeniorDoctorConsent("accepted");
         consentRepo.save(consentEntity);
     }
 
@@ -115,5 +104,9 @@ public class ConsentService {
                 emails, patientEntity.getFirstName(), consentEntity.getConnect().getDoctor().getFirstName(),
                 consentEntity.getNewDoctor().getFirstName());
 
+    }
+
+    public ConsentEntity getConsentByConnectionAndSeniorDoctor(ConnectionEntity connectionEntity, DoctorEntity newDoctorEntity) {
+        return consentRepo.findByConnectAndNewDoctor(connectionEntity, newDoctorEntity);
     }
 }

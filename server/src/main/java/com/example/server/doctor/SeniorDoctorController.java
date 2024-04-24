@@ -67,8 +67,8 @@ public class SeniorDoctorController {
                         consentEntity.getNewDoctor().getFirstName(),
                         consentEntity.getNewDoctor().getLastName(),
                         consentEntity.getNewDoctor().getHospitalSpecialization().getHospital().getHospitalName(),
-                        consentEntity.isPatientConsent(),
-                        consentEntity.isSeniorDoctorConsent(),
+                        consentEntity.getPatientConsent(),
+                        consentEntity.getSeniorDoctorConsent(),
                         consentEntity.getLocalDate()
                 )
         ).toList();
@@ -85,8 +85,8 @@ public class SeniorDoctorController {
                         consentEntity.getNewDoctor().getFirstName(),
                         consentEntity.getNewDoctor().getLastName(),
                         consentEntity.getNewDoctor().getHospitalSpecialization().getHospital().getHospitalName(),
-                        consentEntity.isPatientConsent(),
-                        consentEntity.isSeniorDoctorConsent(),
+                        consentEntity.getPatientConsent(),
+                        consentEntity.getSeniorDoctorConsent(),
                         consentEntity.getLocalDate()
                 )
         ).toList();

@@ -40,10 +40,10 @@ public class ViewConsentResponse {
     private String newDoctorHospitalName;
 
     @JsonProperty("patientConsent")
-    private Boolean patientConsent;
+    private String patientConsent;
 
     @JsonProperty("seniorDrConsent")
-    private Boolean seniorDrConsent;
+    private String seniorDrConsent;
 
     @JsonProperty("date")
     private LocalDate date;

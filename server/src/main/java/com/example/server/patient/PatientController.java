@@ -255,8 +255,8 @@ public class   PatientController {
                         consentEntity.getNewDoctor().getFirstName(),
                         consentEntity.getNewDoctor().getLastName(),
                         consentEntity.getNewDoctor().getHospitalSpecialization().getHospital().getHospitalName(),
-                        consentEntity.isPatientConsent(),
-                        consentEntity.isSeniorDoctorConsent(),
+                        consentEntity.getPatientConsent(),
+                        consentEntity.getSeniorDoctorConsent(),
                         consentEntity.getLocalDate()
                 )
         ).toList();
@@ -288,6 +288,11 @@ public class   PatientController {
             errorMessage.setErrorMessage("You are not authorized to access this");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
         }
+        if(Objects.equals(consentEntity.getPatientConsent(), "rejected")){
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("You have already rejected the consent");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
         consent.givePatientConsent(consentEntity.getId());
 
         patient.setLastAccessTime(patientEntity.getEmail());
@@ -296,9 +301,8 @@ public class   PatientController {
 
         consent.sendApprovalEmailToNewDoctor(consentEntity);
 
-
         SuccessMessage successMessage = new SuccessMessage();
-        successMessage.setSuccessMessage("The Consent to share the report has been granted");
+        successMessage.setSuccessMessage("The Consent to share the report has been approved");
         return ResponseEntity.ok(successMessage);
     }
 
@@ -324,6 +328,17 @@ public class   PatientController {
             errorMessage.setErrorMessage("You are not authorized to access this");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
         }
+        if(Objects.equals(consentEntity.getPatientConsent(), "rejected")){
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("You have already rejected the consent");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        if(Objects.equals(consentEntity.getPatientConsent(), "pending")){
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("You have to Accept or Reject. You cannot withdraw without accepting first");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+
         consent.withdrawPatientConsent(consentEntity.getId());
 
         patient.setLastAccessTime(patientEntity.getEmail());

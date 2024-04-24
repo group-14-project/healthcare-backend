@@ -18,10 +18,9 @@ public class ConsentEntity {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         private Integer id;
-        private boolean seniorDoctorConsent;
-        private boolean patientConsent;
+        private String seniorDoctorConsent;
+        private String patientConsent;
         private LocalDate localDate;
-        private boolean firstTimeWithdraw;
 
         @ManyToOne
         @JoinColumn(name = "connectionId")
