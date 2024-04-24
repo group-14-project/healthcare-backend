@@ -21,6 +21,8 @@ public class ReportEntity {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
 
+  private String reportName;
+
   private String fileName;
 
   private LocalDateTime dateTime;
@@ -32,5 +34,4 @@ public class ReportEntity {
   @ManyToOne
   @JoinColumn(name = "connectionId")
   private ConnectionEntity con;
-
  }

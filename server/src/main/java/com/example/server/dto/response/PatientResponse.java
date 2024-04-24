@@ -42,6 +42,9 @@ public class PatientResponse {
         @JsonProperty("futureAppointments")
         private List<AppointmentDetailsDto> futureAppointmentDetails;
 
+        @JsonProperty("doctorList")
+        List<DoctorDetailsResponse> doctorDetailsResponses;
+
 
 
 //    public static PatientResponse fromPatientEntity(PatientEntity patientEntity, String token){

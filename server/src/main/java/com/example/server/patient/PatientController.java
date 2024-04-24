@@ -33,9 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping("/patient")
@@ -88,12 +86,24 @@ public class   PatientController {
         }
 
         List<ConnectionEntity> connectionEntities = connection.findAllConnections(newPatient);
+        List<DoctorDetailsResponse> doctorDetailsResponses = new ArrayList<>();
+        for(ConnectionEntity connectionEntity: connectionEntities){
+            DoctorDetailsResponse doctorDetailsResponse = new DoctorDetailsResponse();
+            doctorDetailsResponse.setDoctorEmail(connectionEntity.getDoctor().getEmail());
+            doctorDetailsResponse.setDegree(connectionEntity.getDoctor().getDegree());
+            doctorDetailsResponse.setFirstName(connectionEntity.getDoctor().getFirstName());
+            doctorDetailsResponse.setLastName(connectionEntity.getDoctor().getLastName());
+            doctorDetailsResponse.setSpecialization(connectionEntity.getDoctor().getHospitalSpecialization().getSpecialization().getName());
+            doctorDetailsResponse.setHospitalName(connectionEntity.getDoctor().getHospitalSpecialization().getHospital().getHospitalName());
+            doctorDetailsResponse.setImageUrl(connectionEntity.getDoctor().getImageUrl());
+            doctorDetailsResponses.add(doctorDetailsResponse);
+        }
         List<AppointmentDetailsDto> pastAppointmentDetails = consultation.findPastAppointments(connectionEntities);
         List<AppointmentDetailsDto> futureAppointmentDetails = consultation.findFutureAppointments(connectionEntities);
 
         PatientResponse patientResponse = new PatientResponse(newPatient.getId(),
                 newPatient.getEmail(), newPatient.getFirstName(), newPatient.getLastName(), newPatient.getHeight(), newPatient.getWeight(), newPatient.getBloodGroup(),
-                newPatient.getGender(), newPatient.isFirstTimeLogin(), pastAppointmentDetails, futureAppointmentDetails);
+                newPatient.getGender(), newPatient.isFirstTimeLogin(), pastAppointmentDetails, futureAppointmentDetails, doctorDetailsResponses);
 
         String jwtToken = jwtService.createJwt(newPatient.getEmail(), newPatient.getRole());
         patient.setJwtToken(jwtToken, newPatient.getEmail());
@@ -324,9 +334,8 @@ public class   PatientController {
     }
 
 
-    @PostMapping("/uploadReport/{id}")
-    public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file,
-                                        @PathVariable("id") Integer id, HttpServletRequest request) throws Exception {
+    @PostMapping(value = "/uploadReport", consumes = "multipart/form-data")
+    public ResponseEntity<?> uploadFile(@ModelAttribute ReportUploadRequest reportUploadRequest, HttpServletRequest request) throws Exception {
         PatientEntity patientEntity = jwtTokenReCheck.checkJWTAndSessionPatient(request);
         if(patientEntity==null)
         {
@@ -335,23 +344,21 @@ public class   PatientController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
         }
 
-        if (file.isEmpty()) {
+        if (reportUploadRequest.getFile().isEmpty()) {
             ErrorMessage errorMessage = new ErrorMessage();
             errorMessage.setErrorMessage("No PDF uploaded");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
         }
-        if (!"application/pdf".equals(file.getContentType())) {
+        if (!"application/pdf".equals(reportUploadRequest.getFile().getContentType())) {
             ErrorMessage errorMessage = new ErrorMessage();
             errorMessage.setErrorMessage("File is not a PDF");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
 
         }
-        String randomUUID = UUID.randomUUID().toString();
-//        String fileName = "Report-" + patientEntity.getFirstName() + "-" + randomUUID;
-        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
-        String contentType = file.getContentType();
-        InputStream inputStream = file.getInputStream();
-        long filesize = file.getSize();
+        String fileName = StringUtils.cleanPath(reportUploadRequest.getFile().getOriginalFilename());
+        String contentType = reportUploadRequest.getFile().getContentType();
+        InputStream inputStream = reportUploadRequest.getFile().getInputStream();
+//        long filesize = reportUploadRequest.getFile().getSize();
         byte[] encryptedBytes = encryptFile.encryptFile(inputStream);
 
         // Create an InputStream from the encrypted content
@@ -363,17 +370,16 @@ public class   PatientController {
         }
 
         //TODO: work to be done
-        Optional<DoctorEntity> doctor = doctorRepository.findById(id);
-        String doctorEmail = doctor.get().getEmail();
+        DoctorEntity doctor = doctorRepository.findDoctorEntitiesByEmail(reportUploadRequest.getDoctorEmail());
 
-        ConnectionEntity connectionEntity = connection.findConnection(doctorEmail, patientEntity.getEmail());
+        ConnectionEntity connectionEntity = connection.findConnection(reportUploadRequest.getDoctorEmail(), patientEntity.getEmail());
 
-        if(!doctorEmail.isEmpty() && connectionEntity == null) {
+        if(doctor!=null && connectionEntity == null) {
             ErrorMessage errorMessage = new ErrorMessage();
             errorMessage.setErrorMessage("Doctor not Found, please try again");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
         }
-        ReportEntity reportEntity = report.addReport(fileName, patientEntity, connectionEntity);
+        ReportEntity reportEntity = report.addReport(fileName, patientEntity, connectionEntity, reportUploadRequest.getReportName());
         if(reportEntity == null) {
             ErrorMessage errorMessage = new ErrorMessage();
             errorMessage.setErrorMessage("Unexpected Error Please upload Again");
@@ -396,7 +402,12 @@ public class   PatientController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
         }
         ReportEntity reportEntity = report.findReportById(id);
-        String bucketName = "adityavit36";// Download the encrypted file content
+        if(!Objects.equals(reportEntity.getPat().getEmail(), patientEntity.getEmail())){
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("You are not allowed to access this report");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        String bucketName = "adityavit36";
         val encryptedBody = awsServiceImplementation.downloadFile(bucketName,reportEntity.getFileName()); // Decrypt the file content
         byte[] decryptedBytes = encryptFile.decryptFile(encryptedBody.toByteArray());
         patient.setLastAccessTime(patientEntity.getEmail());
@@ -405,11 +416,9 @@ public class   PatientController {
         headers.setContentType(FileTypeEnum.fromFilename(reportEntity.getFileName()));
 
         patient.setLastAccessTime(patientEntity.getEmail());
-        // Return decrypted file content as response body
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(decryptedBytes);
-//      return ResponseEntity.ok().body(decryptedBytes);
     }
 
     @PostMapping("/addReview")
@@ -470,5 +479,19 @@ public class   PatientController {
         successMessage.setSuccessMessage("You have been logged out");
         return ResponseEntity.ok(successMessage);
     }
+
+    @GetMapping("/viewReports")
+    public ResponseEntity<?> viewReports(HttpServletRequest request){
+        PatientEntity patientEntity = jwtTokenReCheck.checkJWTAndSessionPatient(request);
+        if (patientEntity == null) {
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("You have been logged out");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        List<ConnectionEntity> connectionEntities = connection.findAllConnections(patientEntity);
+        List<ReportDetailsResponse> reportDetailsResponses = report.findAllReportsByConnectionListAndBlank(connectionEntities);
+        return ResponseEntity.ok(reportDetailsResponses);
+    }
+
 
 }

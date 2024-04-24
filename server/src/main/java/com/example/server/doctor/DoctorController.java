@@ -1,5 +1,8 @@
 package com.example.server.doctor;
 
+import com.example.server.aws.AwsServiceImplementation;
+import com.example.server.aws.EncryptFile;
+import com.example.server.aws.FileTypeEnum;
 import com.example.server.connection.ConnectionEntity;
 import com.example.server.connection.ConnectionService;
 import com.example.server.consent.ConsentEntity;
@@ -16,9 +19,12 @@ import com.example.server.jwtToken.JWTService;
 import com.example.server.jwtToken.JWTTokenReCheck;
 import com.example.server.patient.PatientEntity;
 import com.example.server.patient.PatientService;
+import com.example.server.report.ReportEntity;
+import com.example.server.report.ReportService;
 import com.example.server.reviews.ReviewService;
 import com.example.server.webSocket.DoctorStatusScheduler;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.val;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +34,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/doctor")
@@ -43,8 +50,11 @@ public class DoctorController {
     private final ConsentService consent;
     private final ConsultationService consultation;
     private final ReviewService review;
+    private final ReportService report;
+    private final AwsServiceImplementation awsServiceImplementation;
+    private final EncryptFile encryptFile;
 
-    public DoctorController(DoctorService doctor, JWTService jwtService, JWTTokenReCheck jwtTokenReCheck, PatientService patient, DoctorStatusScheduler doctorStatusScheduler, EmailSender emailSender, ConnectionService connection, ConsentService consent, ConsultationService consultation, ReviewService reviewService) {
+    public DoctorController(DoctorService doctor, JWTService jwtService, JWTTokenReCheck jwtTokenReCheck, PatientService patient, DoctorStatusScheduler doctorStatusScheduler, EmailSender emailSender, ConnectionService connection, ConsentService consent, ConsultationService consultation, ReviewService reviewService, ReportService report, AwsServiceImplementation awsServiceImplementation, EncryptFile encryptFile) {
         this.doctor = doctor;
         this.jwtService = jwtService;
         this.jwtTokenReCheck = jwtTokenReCheck;
@@ -55,6 +65,9 @@ public class DoctorController {
         this.consent = consent;
         this.consultation = consultation;
         this.review = reviewService;
+        this.report = report;
+        this.awsServiceImplementation = awsServiceImplementation;
+        this.encryptFile = encryptFile;
     }
 
     @PostMapping("/login")
@@ -325,4 +338,46 @@ public class DoctorController {
         return ResponseEntity.ok(successMessage);
     }
 
+    @PostMapping("/viewReports")
+    public ResponseEntity<?> viewReports(@RequestBody EmailRequest emailRequest, HttpServletRequest request) throws IOException {
+        DoctorEntity doctorEntity = jwtTokenReCheck.checkJWTAndSessionDoctor(request);
+        if (doctorEntity == null) {
+            doctorStatusScheduler.sendDoctorStatusUpdate();
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("You have been logged out");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        ConnectionEntity connectionEntity = connection.findConnection(doctorEntity.getEmail(), emailRequest.getEmail());
+        List<ReportDetailsResponse> reportDetailsResponses = report.findAllReportsByConnection(connectionEntity);
+        return ResponseEntity.ok(reportDetailsResponses);
+    }
+
+    @GetMapping("/downloadFile/{id}")
+    public ResponseEntity<?> downloadFile(@PathVariable("id") Integer id, HttpServletRequest request) throws Exception {
+        DoctorEntity doctorEntity = jwtTokenReCheck.checkJWTAndSessionDoctor(request);
+        if (doctorEntity == null) {
+            doctorStatusScheduler.sendDoctorStatusUpdate();
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("You have been logged out");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        ReportEntity reportEntity = report.findReportById(id);
+        if(!Objects.equals(reportEntity.getCon().getDoctor().getEmail(), doctorEntity.getEmail())){
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("You are not allowed to access this report");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        String bucketName = "adityavit36";
+        val encryptedBody = awsServiceImplementation.downloadFile(bucketName,reportEntity.getFileName()); // Decrypt the file content
+        byte[] decryptedBytes = encryptFile.decryptFile(encryptedBody.toByteArray());
+        patient.setLastAccessTime(doctorEntity.getEmail());
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentDispositionFormData("attachment", reportEntity.getFileName());
+        headers.setContentType(FileTypeEnum.fromFilename(reportEntity.getFileName()));
+
+        patient.setLastAccessTime(doctorEntity.getEmail());
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(decryptedBytes);
+    }
 }

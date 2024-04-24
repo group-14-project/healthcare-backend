@@ -7,4 +7,5 @@ import org.springframework.web.multipart.MultipartFile;
 public class ReportUploadRequest {
     private MultipartFile file;
     private String doctorEmail;
+    private String reportName;
 }

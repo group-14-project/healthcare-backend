@@ -100,8 +100,8 @@ public class SeniorDoctorController {
         return ResponseEntity.ok(consentResponse);
     }
 
-    @PostMapping("/approveConsent")
-    public ResponseEntity<?> approveConsent(@RequestBody GiveConsentRequest giveConsentRequest, HttpServletRequest request ) {
+    @PostMapping("/approveConsent/{id}")
+    public ResponseEntity<?> approveConsent(@PathVariable Integer id, HttpServletRequest request ) {
         DoctorEntity doctorEntity = jwtTokenReCheck.checkJWTAndSessionSeniorDoctor(request);
         if (doctorEntity == null) {
             ErrorMessage errorMessage = new ErrorMessage();
@@ -109,7 +109,7 @@ public class SeniorDoctorController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
         }
 
-        ConsentEntity consentEntity = consent.getConsentById(giveConsentRequest.getConsentId());
+        ConsentEntity consentEntity = consent.getConsentById(id);
         if (consentEntity == null) {
             ErrorMessage errorMessage = new ErrorMessage();
             errorMessage.setErrorMessage("Please Select Valid Options");
