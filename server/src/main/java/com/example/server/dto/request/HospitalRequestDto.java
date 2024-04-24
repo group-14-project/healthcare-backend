@@ -18,6 +18,4 @@ public class HospitalRequestDto
     private String city;
 
     private String pinCode;
-
-    private String role;
 }

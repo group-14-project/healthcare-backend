@@ -43,7 +43,7 @@ public class SuperAdminService
         //getting the address from the response and putting it in the hospital
         hospital.setEmail(hospitalRequestDto.getEmail());
         //getting the email from the response and putting it in the hospital
-        hospital.setRole(hospitalRequestDto.getRole());
+        hospital.setRole("ROLE_hospital");
         //getting the role from the response and putting it in the hospital
         hospital.setEmailVerify(false);
         //at the starting this will be false until we will not verify it

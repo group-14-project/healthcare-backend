@@ -38,7 +38,7 @@ public class HospitalSpecializationService {
             return null;
         }
 
-        HospitalSpecializationEntity currSpecialization = hospitalSpecializationRepository.findByHospitalIdAndSpecializationId(hospitalEntity.getId(), specializationEntity.getId());
+        HospitalSpecializationEntity currSpecialization = hospitalSpecializationRepository.findByHospitalIdAndSpecializationId(hospitalEntity, specializationEntity);
         if(currSpecialization!=null){
             return null;
         }
@@ -60,7 +60,7 @@ public class HospitalSpecializationService {
         if(specialization==null) {
             return null;
         }
-        return hospitalSpecializationRepository.findByHospitalIdAndSpecializationId(hospital.getId(),specialization.getId());
+        return hospitalSpecializationRepository.findByHospitalIdAndSpecializationId(hospital,specialization);
     }
 
     public List<HospitalSpecializationEntity> getSpecializationByHospital(HospitalEntity hospital) {
@@ -68,7 +68,7 @@ public class HospitalSpecializationService {
     }
 
     public HospitalSpecializationEntity findByHospitalAndSpecialization(HospitalEntity hospitalEntity, SpecializationEntity specializationEntity) {
-        return hospitalSpecializationRepository.findByHospitalIdAndSpecializationId(hospitalEntity.getId(), specializationEntity.getId());
+        return hospitalSpecializationRepository.findByHospitalIdAndSpecializationId(hospitalEntity, specializationEntity);
     }
 
     public List<DepartmentDto> getDepartmentDoctors(List<HospitalSpecializationEntity> hospitalSpecializationEntities) {

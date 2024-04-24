@@ -241,4 +241,14 @@ public class DoctorService {
         DoctorEntity doctor = doctorRepository.findDoctorEntitiesByEmail(email);
         doctor.setJwtToken("Expired");
     }
+
+    public void changeStatus(DoctorEntity doctorEntity) {
+        Integer activeStatus = doctorEntity.getActiveStatus();
+        if(activeStatus==1){
+            doctorEntity.setActiveStatus(2);
+        }else{
+            doctorEntity.setActiveStatus(1);
+        }
+        doctorRepository.save(doctorEntity);
+    }
 }

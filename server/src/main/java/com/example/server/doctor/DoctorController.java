@@ -396,14 +396,20 @@ public class DoctorController {
                 .body(decryptedBytes);
     }
 
-//    @GetMapping("/changeStatus")
-//    ResponseEntity<?> changeStatus(HttpServletRequest request) throws IOException {
-//        DoctorEntity doctorEntity = jwtTokenReCheck.checkJWTAndSessionDoctor(request);
-//        if (doctorEntity == null) {
-//            doctorStatusScheduler.sendDoctorStatusUpdate();
-//            ErrorMessage errorMessage = new ErrorMessage();
-//            errorMessage.setErrorMessage("You have been logged out");
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
-//        }
-//    }
+    @GetMapping("/changeStatus")
+    ResponseEntity<?> changeStatus(HttpServletRequest request) throws IOException {
+        DoctorEntity doctorEntity = jwtTokenReCheck.checkJWTAndSessionDoctor(request);
+        if (doctorEntity == null) {
+            doctorStatusScheduler.sendDoctorStatusUpdate();
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("You have been logged out");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        doctor.changeStatus(doctorEntity);
+        doctorStatusScheduler.sendDoctorStatusUpdate();
+        doctor.setLastAccessTime(doctorEntity.getEmail());
+        SuccessMessage successMessage = new SuccessMessage();
+        successMessage.setSuccessMessage("Status is changed");
+        return ResponseEntity.ok(successMessage);
+    }
 }
