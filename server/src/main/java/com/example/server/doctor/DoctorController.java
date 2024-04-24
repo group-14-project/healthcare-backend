@@ -82,6 +82,8 @@ public class DoctorController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
         }
 
+        doctor.changeStatus(newDoctor);
+
         List<ConnectionEntity> connectionEntities=connection.findAllConnectionsByDoctor(newDoctor);
         List<AppointmentDetailsDto> pastAppointmentDetails = consultation.findPastAppointments(connectionEntities);
         List<AppointmentDetailsDto> futureAppointmentDetails = consultation.findFutureAppointments(connectionEntities);

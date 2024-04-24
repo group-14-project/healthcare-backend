@@ -60,7 +60,7 @@ public class ConsentService {
         List<String> emails = new ArrayList<>();
         emails.add(consentEntity.getConnect().getDoctor().getEmail());
         emails.add(consentEntity.getConnect().getPatient().getEmail());
-        emails.add(consentEntity.getConnect().getDoctor().getHospitalSpecializationhead().getHeadDoctor().getEmail());
+        emails.add(consentEntity.getConnect().getDoctor().getHospitalSpecialization().getHeadDoctor().getEmail());
 
         emailSender.approvedPatientConsentToMainDoctor(
                 emails, patientEntity.getFirstName(), consentEntity.getConnect().getDoctor().getFirstName(),
@@ -98,7 +98,7 @@ public class ConsentService {
         List<String> emails = new ArrayList<>();
         emails.add(consentEntity.getConnect().getDoctor().getEmail());
         emails.add(consentEntity.getConnect().getPatient().getEmail());
-        emails.add(consentEntity.getConnect().getDoctor().getHospitalSpecializationhead().getHeadDoctor().getEmail());
+        emails.add(consentEntity.getConnect().getDoctor().getHospitalSpecialization().getHeadDoctor().getEmail());
 
         emailSender.approvedSrDoctorConsentToMainDoctor(
                 emails, patientEntity.getFirstName(), consentEntity.getConnect().getDoctor().getFirstName(),
