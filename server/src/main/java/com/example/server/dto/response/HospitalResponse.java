@@ -32,6 +32,9 @@ public class HospitalResponse
     @JsonProperty("eachDayCounts")
     private List<EachDayCount> eachDayCounts;
 
+    @JsonProperty("specialization")
+    private List<String> specialization;
+
     // No-argument constructor
     public HospitalResponse() {
     }

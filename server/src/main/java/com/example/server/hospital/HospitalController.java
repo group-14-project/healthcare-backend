@@ -59,7 +59,7 @@ public class HospitalController
 
     //JWT Token done
     @PostMapping("/login")
-    ResponseEntity<?> loginPatient(@RequestBody VerifyEmailRequest body)
+    ResponseEntity<?> loginHospital(@RequestBody VerifyEmailRequest body)
     {
         HospitalEntity newHospital = hospital.verifyHospital(
                 body.getUser().getEmail(),
@@ -74,6 +74,7 @@ public class HospitalController
         List<ConnectionEntity> connectionEntities = connection.findAllConnectionByHospital(newHospital);
         List<ViewReviewsResponse> viewReviewsResponses = review.viewReviewsByConnection(connectionEntities);
         List<EachDayCount> eachDayCounts=consultation.sendEachDayCount(connectionEntities);
+        List<String> specialization = specializationService.findAll();
 
         HospitalResponse hospitalResponse=new HospitalResponse();
         hospitalResponse.setHospitalName(newHospital.getHospitalName());
@@ -84,6 +85,8 @@ public class HospitalController
         hospitalResponse.setDoctors(doctors);
         hospitalResponse.setReviewsResponses(viewReviewsResponses);
         hospitalResponse.setEachDayCounts(eachDayCounts);
+        hospitalResponse.setSpecialization(specialization);
+
 
         String jwtToken = jwtService.createJwt(newHospital.getEmail(), newHospital.getRole());
         hospital.setJwtToken(jwtToken, newHospital.getEmail());
