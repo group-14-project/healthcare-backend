@@ -14,10 +14,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.socket.TextMessage;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Controller
 public class SignalingController {
     ArrayList<String> users = new ArrayList<String>();
+
+    private final Map<String, List<String>> map = new ConcurrentHashMap<>();
 
     @Autowired
     SimpMessagingTemplate simpMessagingTemplate;
@@ -54,9 +59,26 @@ public class SignalingController {
         JSONObject jsonObjectFrom = new JSONObject(jsonObject.getString("callFrom"));
         System.out.println(jsonObjectTo);
         System.out.println(jsonObjectTo.getString("doctorName"));
-//        System.out.println("Calling to: "+jsonObject.get("callTo")+" Call from "+jsonObject.get("callFrom"));
-//        System.out.println("Calling to class: "+jsonObject.get("callTo").getClass()+" Call from class "+jsonObject.get("callFrom").getClass());
-        simpMessagingTemplate.convertAndSendToUser(jsonObjectTo.getString("remoteId"),"/topic/call",call);
+        String doctorId = jsonObjectTo.getString("remoteId");
+        String patientId = jsonObjectFrom.getString("localId");
+
+        simpMessagingTemplate.convertAndSendToUser(doctorId,"/topic/call",call);
+
+        map.computeIfAbsent(doctorId,k->new ArrayList<>()).add(patientId);
+
+        List<String> queue = map.get(doctorId);
+        String currentPatient = null;
+        if(queue!=null && !queue.isEmpty()){
+            currentPatient = queue.get(0);
+        }
+
+        if(currentPatient == patientId){
+            simpMessagingTemplate.convertAndSendToUser(doctorId,"/topic/call",currentPatient);
+        }
+        else{
+            simpMessagingTemplate.convertAndSendToUser(patientId,"/topic/call",queue.size());
+        }
+
     }
 
     @MessageMapping("/offer")
@@ -109,8 +131,34 @@ public class SignalingController {
     public void DisconnectCall(String call){
         System.out.println(call);
         JSONObject jsonObject = new JSONObject(call);
-//        System.out.println(jsonObject.get(""));
+
+        String localId = jsonObject.getString("acceptedBy");
+        String remoteId = jsonObject.getString("initiatedBy");
+        String role = jsonObject.getString("role");
+
+        String patientId=null,doctorId=null;
+
+        if(role.equals("doctor")){
+            patientId = remoteId;
+            doctorId = localId;
+        }
+        else{
+            patientId = localId;
+            doctorId = remoteId;
+        }
+
+        List<String> queue = map.get(doctorId);
+        queue.remove(patientId);
+
+        System.out.println(jsonObject.get(""));
         simpMessagingTemplate.convertAndSendToUser(jsonObject.getString("initiatedBy"), "/topic/disconnectCall", call);
+
+        String currentPatient = null;
+        if(queue!=null && !queue.isEmpty()){
+            currentPatient = queue.get(0);
+            simpMessagingTemplate.convertAndSendToUser(doctorId,"/topic/call",currentPatient);
+        }
+
     }
 
 }
