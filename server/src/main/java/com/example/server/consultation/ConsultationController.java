@@ -17,13 +17,13 @@ public class ConsultationController {
     }
 
     //TODO Shift to doctor controller
-    @PostMapping("/addPrescriptionRecordLink/{id}")
-    public ResponseEntity<Void> addPrescriptionRecordLink(@RequestBody AddPrescriptionRecordingLink addPrescriptionRecordingLink, @PathVariable Integer id){
-        ConsultationEntity consultationEntity = consultation.setPrescriptionRecordingLink(addPrescriptionRecordingLink.getPrescription(),
-                addPrescriptionRecordingLink.getRecordingLink(), id);
-        if(consultationEntity==null){
-            throw new PatientController.UnexpectedErrorException();
-        }
-        return ResponseEntity.status(HttpStatus.CREATED).build();
-    }
+//    @PostMapping("/addPrescription/{id}")
+//    public ResponseEntity<Void> addPrescriptionRecordLink(@RequestBody AddPrescriptionRecordingLink addPrescriptionRecordingLink, @PathVariable Integer id){
+//        ConsultationEntity consultationEntity = consultation.setPrescriptionRecordingLink(addPrescriptionRecordingLink.getPrescription(),
+//                addPrescriptionRecordingLink.getRecordingLink(), id);
+//        if(consultationEntity==null){
+//            throw new PatientController.UnexpectedErrorException();
+//        }
+//        return ResponseEntity.status(HttpStatus.CREATED).build();
+//    }
 }

@@ -19,5 +19,7 @@ public interface DoctorRepository extends JpaRepository<DoctorEntity, Integer> {
     @Query("select c from DoctorEntity c where c.hospitalSpecialization = :specializationEntity")
     List<DoctorEntity> findAllBySpecialization(HospitalSpecializationEntity specializationEntity);
 
+    @Query("select c from DoctorEntity c where c.id = :id")
+    DoctorEntity findByDoctorId(Integer id);
 
 }

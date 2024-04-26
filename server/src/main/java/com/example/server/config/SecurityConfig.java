@@ -33,7 +33,7 @@ public class SecurityConfig{
 
         http.authorizeHttpRequests((authorize)->
                 authorize.requestMatchers(HttpMethod.GET, "*/landingPage", "*/opdtimings", "*/profile", "/hospitals").permitAll()
-                        .requestMatchers(HttpMethod.POST, "*/login", "*/signup", "*/loginotp", "*/signupotp").permitAll()
+                        .requestMatchers(HttpMethod.POST, "*/login", "*/signup", "*/loginotp", "*/signupotp", "*/forgotPassword", "/changePassword").permitAll()
                         .requestMatchers("/patient/**").hasRole("patient")
                         .requestMatchers("/doctor/**", "/senior_doctor/**").hasRole("seniorDoctor")
                         .requestMatchers("/doctor/**").hasAnyRole("doctor", "seniorDoctor")
