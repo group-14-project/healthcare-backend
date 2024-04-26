@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 //import com.gargoylesoftware.htmlunit.javascript.host.media.rtc.RTCSessionDescription;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -52,6 +53,9 @@ public class SignalingController {
 
     @MessageMapping("/call")
     public void Call(String call){
+
+        System.out.println("Call: "+call);
+
         JSONObject jsonObject = new JSONObject(call);
 
         System.out.println(jsonObject.get("callTo").getClass());
@@ -61,21 +65,25 @@ public class SignalingController {
         System.out.println(jsonObjectTo.getString("doctorName"));
         String doctorId = jsonObjectTo.getString("remoteId");
         String patientId = jsonObjectFrom.getString("localId");
+        String patientName = jsonObjectFrom.getString("patientName");
+        String doctorName = jsonObjectTo.getString("doctorName");
 
-        simpMessagingTemplate.convertAndSendToUser(doctorId,"/topic/call",call);
+//        simpMessagingTemplate.convertAndSendToUser(doctorId,"/topic/call",call);
 
-        map.computeIfAbsent(doctorId,k->new ArrayList<>()).add(patientId);
+        map.computeIfAbsent(doctorId,k->new ArrayList<>()).add(call);
 
         List<String> queue = map.get(doctorId);
-        String currentPatient = null;
+        String currentCall = null;
         if(queue!=null && !queue.isEmpty()){
-            currentPatient = queue.get(0);
+            currentCall = queue.get(0);
         }
 
-        if(currentPatient == patientId){
-            simpMessagingTemplate.convertAndSendToUser(doctorId,"/topic/call",currentPatient);
+        if(currentCall.equals(call)){
+            System.out.println("equals");
+            simpMessagingTemplate.convertAndSendToUser(doctorId,"/topic/call",call);
         }
         else{
+            System.out.println("still in queue");
             simpMessagingTemplate.convertAndSendToUser(patientId,"/topic/call",queue.size());
         }
 
@@ -146,19 +154,33 @@ public class SignalingController {
             patientId = localId;
             doctorId = remoteId;
         }
-
+//
         List<String> queue = map.get(doctorId);
-        queue.remove(patientId);
+        queue.remove(0);
 
-        System.out.println(jsonObject.get(""));
+
+//
+//        System.out.println(jsonObject.get(""));
         simpMessagingTemplate.convertAndSendToUser(jsonObject.getString("initiatedBy"), "/topic/disconnectCall", call);
 
-        String currentPatient = null;
+        String currentCall = null;
         if(queue!=null && !queue.isEmpty()){
-            currentPatient = queue.get(0);
-            simpMessagingTemplate.convertAndSendToUser(doctorId,"/topic/call",currentPatient);
+            currentCall = queue.get(0);
+            simpMessagingTemplate.convertAndSendToUser(doctorId,"/topic/call",currentCall);
         }
 
     }
+
+
+
+    @MessageMapping("/rejectCall")
+    public void RejectCall(String call){
+        JSONObject jsonObject = new JSONObject(call);
+        JSONObject jsonObjectTo = new JSONObject(jsonObject.getString("initiatedBy"));
+
+        simpMessagingTemplate.convertAndSendToUser(jsonObjectTo.getString("caller"), "/topic/rejectCall", call);
+    }
+
+
 
 }
