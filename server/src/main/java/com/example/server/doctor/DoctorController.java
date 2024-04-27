@@ -17,6 +17,7 @@ import com.example.server.errorOrSuccessMessageResponse.SuccessMessage;
 import com.example.server.hospitalSpecialization.HospitalSpecializationEntity;
 import com.example.server.jwtToken.JWTService;
 import com.example.server.jwtToken.JWTTokenReCheck;
+import com.example.server.patient.PatientController;
 import com.example.server.patient.PatientEntity;
 import com.example.server.patient.PatientService;
 import com.example.server.report.ReportEntity;
@@ -364,6 +365,12 @@ public class DoctorController {
             errorMessage.setErrorMessage("You have been logged out");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
         }
+        PatientEntity patientEntity = patient.patientDetails(emailRequest.getEmail());
+        if(patientEntity==null){
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("No such patient found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
         ConnectionEntity connectionEntity = connection.findConnection(doctorEntity.getEmail(), emailRequest.getEmail());
         List<ReportDetailsResponse> reportDetailsResponses = report.findAllReportsByConnection(connectionEntity);
         return ResponseEntity.ok(reportDetailsResponses);
@@ -379,7 +386,7 @@ public class DoctorController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
         }
         ReportEntity reportEntity = report.findReportById(id);
-        if(!Objects.equals(reportEntity.getCon().getDoctor().getEmail(), doctorEntity.getEmail())){
+        if(reportEntity==null || !Objects.equals(reportEntity.getCon().getDoctor().getEmail(), doctorEntity.getEmail())){
             ErrorMessage errorMessage = new ErrorMessage();
             errorMessage.setErrorMessage("You are not allowed to access this report");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
@@ -399,7 +406,7 @@ public class DoctorController {
     }
 
     @GetMapping("/changeStatus")
-    ResponseEntity<?> changeStatus(HttpServletRequest request) throws IOException {
+    public ResponseEntity<?> changeStatus(HttpServletRequest request) throws IOException {
         DoctorEntity doctorEntity = jwtTokenReCheck.checkJWTAndSessionDoctor(request);
         if (doctorEntity == null) {
             doctorStatusScheduler.sendDoctorStatusUpdate();
@@ -414,4 +421,91 @@ public class DoctorController {
         successMessage.setSuccessMessage("Status is changed");
         return ResponseEntity.ok(successMessage);
     }
+
+    @GetMapping("/getRecommendedPatients")
+    public ResponseEntity<?> getRecommendedPatients(HttpServletRequest request) throws IOException {
+        DoctorEntity doctorEntity = jwtTokenReCheck.checkJWTAndSessionDoctor(request);
+        if (doctorEntity == null) {
+            doctorStatusScheduler.sendDoctorStatusUpdate();
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("You have been logged out");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        List<ConsentEntity> consentEntities = consent.findApprovedConsentByDoctorAndPatientByNewDoctor(doctorEntity);
+        if(consentEntities==null){
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("You dont have any recommended patients");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        List<RecommendedPatients> recommendedPatients = new ArrayList<>();
+        for(ConsentEntity consentEntity: consentEntities){
+            RecommendedPatients recommendedPatients1 = new RecommendedPatients();
+            recommendedPatients1.setDoctorFirstName(consentEntity.getConnect().getDoctor().getFirstName());
+            recommendedPatients1.setDoctorLastName(consentEntity.getConnect().getDoctor().getLastName());
+            recommendedPatients1.setPatientFirstName(consentEntity.getConnect().getPatient().getFirstName());
+            recommendedPatients1.setPatientLastName(consentEntity.getConnect().getPatient().getLastName());
+            recommendedPatients1.setLocalDate(consentEntity.getLocalDate());
+            recommendedPatients1.setConsentId(consentEntity.getId());
+            recommendedPatients.add(recommendedPatients1);
+        }
+        return ResponseEntity.ok(recommendedPatients);
+    }
+
+    @GetMapping("/viewRecommendedReports/{id}")
+    public ResponseEntity<?> viewRecommendedReports(@PathVariable Integer id, HttpServletRequest request) throws IOException {
+        DoctorEntity doctorEntity = jwtTokenReCheck.checkJWTAndSessionDoctor(request);
+        if (doctorEntity == null) {
+            doctorStatusScheduler.sendDoctorStatusUpdate();
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("You have been logged out");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        ConnectionEntity connectionEntity = consent.findByNewDoctorAndID(doctorEntity, id);
+        if(connectionEntity==null){
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("You dont have access to this patient");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        List<ReportDetailsResponse> reportDetailsResponses = report.findAllReportsByConnection(connectionEntity);
+        return ResponseEntity.ok(reportDetailsResponses);
+    }
+
+    @GetMapping("/downloadRecommendedFile/{id}")
+    public ResponseEntity<?> downloadRecommendedFile(@PathVariable("id") Integer id, HttpServletRequest request) throws Exception {
+        DoctorEntity doctorEntity = jwtTokenReCheck.checkJWTAndSessionDoctor(request);
+        if (doctorEntity == null) {
+            doctorStatusScheduler.sendDoctorStatusUpdate();
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("You have been logged out");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        ReportEntity reportEntity = report.findReportById(id);
+        if(reportEntity==null){
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("You are not allowed to access this report");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        ConnectionEntity connectionEntity = reportEntity.getCon();
+        ConnectionEntity connectionEntity1 = consent.findByNewDoctorAndID(doctorEntity, id);
+        if(connectionEntity1==null || connectionEntity1!=connectionEntity){
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("You are not allowed to access this report");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        String bucketName = "adityavit36";
+        val encryptedBody = awsServiceImplementation.downloadFile(bucketName,reportEntity.getFileName()); // Decrypt the file content
+        byte[] decryptedBytes = encryptFile.decryptFile(encryptedBody.toByteArray());
+        patient.setLastAccessTime(doctorEntity.getEmail());
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentDispositionFormData("attachment", reportEntity.getFileName());
+        headers.setContentType(FileTypeEnum.fromFilename(reportEntity.getFileName()));
+
+        patient.setLastAccessTime(doctorEntity.getEmail());
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(decryptedBytes);
+    }
+
+
+
 }

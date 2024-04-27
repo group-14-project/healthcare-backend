@@ -93,6 +93,7 @@ public class DoctorService {
         newDoctor.setEmail(email);
         newDoctor.setRegistrationId(registrationId);
         newDoctor.setDegree(degree);
+        newDoctor.setSenior(false);
         newDoctor.setPhoneNumber(phoneNumber);
         String randomPassword = passwordUtil.generateRandomPassword();
         newDoctor.setPassword(bCryptPasswordEncoder.encode(randomPassword));
