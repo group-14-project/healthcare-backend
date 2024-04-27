@@ -373,6 +373,7 @@ public class DoctorController {
         }
         ConnectionEntity connectionEntity = connection.findConnection(doctorEntity.getEmail(), emailRequest.getEmail());
         List<ReportDetailsResponse> reportDetailsResponses = report.findAllReportsByConnection(connectionEntity);
+        doctor.setLastAccessTime(doctorEntity.getEmail());
         return ResponseEntity.ok(reportDetailsResponses);
     }
 
@@ -398,7 +399,7 @@ public class DoctorController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentDispositionFormData("attachment", reportEntity.getFileName());
         headers.setContentType(FileTypeEnum.fromFilename(reportEntity.getFileName()));
-
+        doctor.setLastAccessTime(doctorEntity.getEmail());
         patient.setLastAccessTime(doctorEntity.getEmail());
         return ResponseEntity.ok()
                 .headers(headers)
@@ -448,6 +449,7 @@ public class DoctorController {
             recommendedPatients1.setConsentId(consentEntity.getId());
             recommendedPatients.add(recommendedPatients1);
         }
+        doctor.setLastAccessTime(doctorEntity.getEmail());
         return ResponseEntity.ok(recommendedPatients);
     }
 
@@ -467,6 +469,7 @@ public class DoctorController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
         }
         List<ReportDetailsResponse> reportDetailsResponses = report.findAllReportsByConnection(connectionEntity);
+        doctor.setLastAccessTime(doctorEntity.getEmail());
         return ResponseEntity.ok(reportDetailsResponses);
     }
 
@@ -486,8 +489,8 @@ public class DoctorController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
         }
         ConnectionEntity connectionEntity = reportEntity.getCon();
-        ConnectionEntity connectionEntity1 = consent.findByNewDoctorAndID(doctorEntity, id);
-        if(connectionEntity1==null || connectionEntity1!=connectionEntity){
+        ConsentEntity consentEntity = consent.getConsentByConnectionAndSeniorDoctor(connectionEntity, doctorEntity);
+        if(consentEntity==null || !Objects.equals(consentEntity.getSeniorDoctorConsent(), "accepted") || !Objects.equals(consentEntity.getPatientConsent(), "accepted")){
             ErrorMessage errorMessage = new ErrorMessage();
             errorMessage.setErrorMessage("You are not allowed to access this report");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
@@ -500,6 +503,7 @@ public class DoctorController {
         headers.setContentDispositionFormData("attachment", reportEntity.getFileName());
         headers.setContentType(FileTypeEnum.fromFilename(reportEntity.getFileName()));
 
+        doctor.setLastAccessTime(doctorEntity.getEmail());
         patient.setLastAccessTime(doctorEntity.getEmail());
         return ResponseEntity.ok()
                 .headers(headers)
