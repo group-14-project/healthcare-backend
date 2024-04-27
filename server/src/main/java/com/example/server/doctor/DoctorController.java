@@ -509,4 +509,37 @@ public class DoctorController {
                 .headers(headers)
                 .body(decryptedBytes);
     }
+
+    @PostMapping("/addPrescription")
+    public ResponseEntity<?> addPrescriptionRecordLink(@RequestBody AddPrescriptionRecordingLink body, HttpServletRequest request) throws IOException {
+        DoctorEntity doctorEntity = jwtTokenReCheck.checkJWTAndSessionDoctor(request);
+        if (doctorEntity == null) {
+            doctorStatusScheduler.sendDoctorStatusUpdate();
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("You have been logged out");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        PatientEntity patientEntity = patient.patientDetails(body.getPatientEmail());
+        if(patientEntity==null){
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("Could not find the patient");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        ConnectionEntity connectionEntity = connection.findConnection(doctorEntity.getEmail(), patientEntity.getEmail());
+        if(connectionEntity==null){
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("This is not your patient");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        ConsultationEntity consultationEntity = consultation.setPrescription(body.getPrescription(), connectionEntity);
+        if(consultationEntity==null){
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("This is not your patient");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        doctor.setLastAccessTime(doctorEntity.getEmail());
+        SuccessMessage successMessage = new SuccessMessage();
+        successMessage.setSuccessMessage("Prescription is added");
+        return ResponseEntity.ok(successMessage);
+    }
 }

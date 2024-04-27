@@ -34,11 +34,9 @@ public class ConsultationService {
         return consultationRepo.save(newConsultation);
     }
 
-    public ConsultationEntity setPrescriptionRecordingLink(String prescription, String recordingLink, Integer id) {
-        ConsultationEntity consultationEntity = consultationRepo.findById(id).orElseThrow(PatientController.UnexpectedErrorException::new);
+    public ConsultationEntity setPrescription(String prescription, ConnectionEntity connection) {
+        ConsultationEntity consultationEntity = consultationRepo.findLatestByConnection(connection, LocalDateTime.now());
         consultationEntity.setPrescription(prescription);
-        consultationEntity.setRecordingLink(recordingLink);
-
         return consultationRepo.save(consultationEntity);
     }
 

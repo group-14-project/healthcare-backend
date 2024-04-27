@@ -30,11 +30,6 @@ public class ConsultationEntity {
 
     private LocalDateTime appointmentDateAndTime;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Date createdAt;
-
     @ManyToOne
     @JoinColumn(name = "connectionId")
     private ConnectionEntity connectionId;
