@@ -505,7 +505,4 @@ public class DoctorController {
                 .headers(headers)
                 .body(decryptedBytes);
     }
-
-
-
 }

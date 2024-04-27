@@ -158,11 +158,11 @@ public class SeniorDoctorController {
             errorMessage.setErrorMessage("You are not authorized to access this");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
         }
-        if (Objects.equals(consentEntity.getPatientConsent(), "accepted")) {
+        if (Objects.equals(consentEntity.getSeniorDoctorConsent(), "accepted")) {
             ErrorMessage errorMessage = new ErrorMessage();
             errorMessage.setErrorMessage("You have accepted it before you cannot reject now");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
-        } else if (Objects.equals(consentEntity.getPatientConsent(), "rejected")) {
+        } else if (Objects.equals(consentEntity.getSeniorDoctorConsent(), "rejected")) {
             ErrorMessage errorMessage = new ErrorMessage();
             errorMessage.setErrorMessage("This request was rejected before you cannot reject again");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
