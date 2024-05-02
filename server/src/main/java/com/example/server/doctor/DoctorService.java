@@ -7,13 +7,14 @@ import com.example.server.hospital.HospitalEntity;
 import com.example.server.hospital.HospitalRepository;
 import com.example.server.hospitalSpecialization.HospitalSpecializationEntity;
 import com.example.server.hospitalSpecialization.HospitalSpecializationRepository;
-import com.example.server.patient.PatientEntity;
+import org.json.JSONObject;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -272,5 +273,63 @@ public class DoctorService {
         DoctorEntity doctor = doctorRepository.findDoctorEntitiesByEmail(email);
         doctor.setPassword(bCryptPasswordEncoder.encode(password));
         doctorRepository.save(doctor);
+    }
+
+    public List<CallDetailsToSeniorDr> callDetailsToSeniorDr(DoctorEntity seniorDoctorEntity, List<String> calls) {
+        List<Integer> DoctorIds = new ArrayList<>();
+        for(String call : calls){
+            JSONObject jsonObject = new JSONObject(call);
+            JSONObject jsonObjectTo = new JSONObject(jsonObject.getString("callTo"));
+            String doctorId = jsonObjectTo.getString("remoteId");
+            int intValue = Integer.parseInt(doctorId);
+            DoctorIds.add(intValue);
+        }
+        HospitalSpecializationEntity hospitalSpecializationEntity = seniorDoctorEntity.getHospitalSpecialization();
+        List<DoctorEntity> doctorEntities = doctorRepository.getDoctorsUnderInCall(hospitalSpecializationEntity, DoctorIds);
+        List<Integer> NewDoctorIds = new ArrayList<>();
+        for(DoctorEntity doctorEntity: doctorEntities){
+            Integer id = doctorEntity.getId();
+            NewDoctorIds.add(id);
+        }
+
+        Iterator<String> iterator = calls.iterator();
+
+        while (iterator.hasNext()) {
+            String call = iterator.next();
+            JSONObject jsonObject = new JSONObject(call);
+            JSONObject jsonObjectTo = new JSONObject(jsonObject.getString("callTo"));
+            String doctorId = jsonObjectTo.getString("remoteId");
+
+            try {
+                int intValue = Integer.parseInt(doctorId);
+
+                if (!NewDoctorIds.contains(intValue)) {
+                    iterator.remove();
+                }
+            } catch (NumberFormatException e) {
+                System.err.println("Error converting to integer: " + doctorId);
+            }
+        }
+        List<CallDetailsToSeniorDr> callDetailsToSeniorDrList = new ArrayList<>();
+        for (String call : calls) {
+            JSONObject jsonObject = new JSONObject(call);
+            JSONObject jsonObjectTo = new JSONObject(jsonObject.getString("callTo"));
+            JSONObject jsonObjectFrom = new JSONObject(jsonObject.getString("callFrom"));
+
+            String doctorId = jsonObjectTo.getString("remoteId");
+            String patientId = jsonObjectFrom.getString("localId");
+            String patientName = jsonObjectFrom.getString("patientName");
+            String doctorName = jsonObjectTo.getString("doctorName");
+
+            int docId = Integer.parseInt(doctorId);
+            int patId = Integer.parseInt(patientId);
+            CallDetailsToSeniorDr callDetailsToSeniorDr = new CallDetailsToSeniorDr();
+            callDetailsToSeniorDr.setDoctorId(docId);
+            callDetailsToSeniorDr.setDoctorName(doctorName);
+            callDetailsToSeniorDr.setPatientName(patientName);
+            callDetailsToSeniorDr.setPatientId(patId);
+            callDetailsToSeniorDrList.add(callDetailsToSeniorDr);
+        }
+        return callDetailsToSeniorDrList;
     }
 }

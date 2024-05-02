@@ -2,12 +2,16 @@ package com.example.server.connection;
 
 import com.example.server.doctor.DoctorEntity;
 import com.example.server.doctor.DoctorService;
+import com.example.server.dto.response.CallDetailsToSeniorDr;
 import com.example.server.hospital.HospitalEntity;
+import com.example.server.hospitalSpecialization.HospitalSpecializationEntity;
 import com.example.server.patient.PatientController;
 import com.example.server.patient.PatientEntity;
 import com.example.server.patient.PatientService;
+import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 

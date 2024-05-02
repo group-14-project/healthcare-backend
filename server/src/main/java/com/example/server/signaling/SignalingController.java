@@ -1,21 +1,26 @@
 package com.example.server.signaling;
 
+import com.example.server.connection.ConnectionService;
+import com.example.server.doctor.DoctorEntity;
 import com.example.server.doctor.DoctorService;
 //import com.gargoylesoftware.htmlunit.javascript.host.media.rtc.RTCSessionDescription;
+import com.example.server.dto.response.CallDetailsToSeniorDr;
+import com.example.server.errorOrSuccessMessageResponse.ErrorMessage;
+import com.example.server.jwtToken.JWTTokenReCheck;
 import jakarta.persistence.LockModeType;
+import jakarta.servlet.http.HttpServletRequest;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.Lock;
-import org.springframework.data.util.Pair;
 import com.example.server.webSocket.DoctorStatusScheduler;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
 
-import org.springframework.web.socket.TextMessage;
 import java.util.*;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,12 +29,16 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Controller
+@RestController
+@CrossOrigin
 public class SignalingController {
 //    ArrayList<String> users = new ArrayList<String>();
 
     private final DoctorService doctorService;
     private final DoctorStatusScheduler doctorStatusScheduler;
 
+    private final JWTTokenReCheck jwtTokenReCheck;
+    private final ConnectionService connectionService;
     private final Map<String, List<String>> map = new ConcurrentHashMap<>();
 
     private Map<String, Set<String>> roomUsers = new ConcurrentHashMap<>();
@@ -37,9 +46,11 @@ public class SignalingController {
     @Autowired
     SimpMessagingTemplate simpMessagingTemplate;
 
-    public SignalingController(DoctorService doctorService, DoctorStatusScheduler doctorStatusScheduler) {
+    public SignalingController(DoctorService doctorService, DoctorStatusScheduler doctorStatusScheduler, JWTTokenReCheck jwtTokenReCheck, ConnectionService connectionService) {
         this.doctorService = doctorService;
         this.doctorStatusScheduler = doctorStatusScheduler;
+        this.jwtTokenReCheck = jwtTokenReCheck;
+        this.connectionService = connectionService;
     }
 
 
@@ -282,6 +293,30 @@ public class SignalingController {
         simpMessagingTemplate.convertAndSendToUser(jsonObjectTo.getString("caller"), "/topic/rejectCall", call);
     }
 
+    @GetMapping("/getCallDetails")
+    public ResponseEntity<?> getCallDetails(HttpServletRequest request ) {
+        DoctorEntity doctorEntity = jwtTokenReCheck.checkJWTAndSessionSeniorDoctor(request);
+        if (doctorEntity == null) {
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("Your Session has expired. Please Login again");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        List<String> calls = getFirstElementsOfLists();
+        List<CallDetailsToSeniorDr> callDetailsToSeniorDrs = doctorService.callDetailsToSeniorDr(doctorEntity, calls);
+        doctorService.setLastAccessTime(doctorEntity.getEmail());
+        return ResponseEntity.ok(callDetailsToSeniorDrs);
+    }
+
+    private List<String> getFirstElementsOfLists() {
+        List<String> firstElements = new ArrayList<>();
+
+        for (List<String> list : map.values()) {
+            if (!list.isEmpty()) {
+                firstElements.add(list.get(0));
+            }
+        }
+        return firstElements;
+    }
 
 
 }
