@@ -8,6 +8,6 @@ public class AddPrescriptionRecordingLink {
     @JsonProperty("prescription")
     private String prescription;
 
-    @JsonProperty("recordingLink")
-    private String recordingLink;
+    @JsonProperty("patientEmail")
+    private String patientEmail;
 }

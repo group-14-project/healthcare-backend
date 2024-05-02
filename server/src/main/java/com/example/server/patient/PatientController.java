@@ -193,17 +193,6 @@ public class   PatientController {
         return ResponseEntity.ok(successMessage);
     }
 
-
-    //JWT Not Done
-    @PutMapping("/changePassword")
-    ResponseEntity<Void> changePassword(@RequestBody LoginUserRequest body){
-        patient.passwordChange(
-                body.getUser().getPassword(),
-                body.getUser().getEmail()
-        );
-        return ResponseEntity.status(HttpStatus.CREATED).build();
-    }
-
     //JWT Done
     @PutMapping("/updateDetail")
     public ResponseEntity<?> updateDetail(@RequestBody PatientDetailsRequest body, HttpServletRequest request)

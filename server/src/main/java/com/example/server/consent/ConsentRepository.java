@@ -18,4 +18,7 @@ public interface ConsentRepository extends JpaRepository<ConsentEntity, Integer>
     List<ConsentEntity> findAllByConnect(List<ConnectionEntity> connectionEntities);
 
     ConsentEntity findConsentById(Integer consentId);
+
+    @Query("select c from ConsentEntity  c where c.newDoctor = :doctorEntity and c.patientConsent = 'accepted' and c.seniorDoctorConsent = 'accepted'")
+    List<ConsentEntity> findApprovedConsentForDoctor(DoctorEntity doctorEntity);
 }

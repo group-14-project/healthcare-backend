@@ -120,4 +120,17 @@ public class ConsentService {
     public void sendRejectionEmailToNewDoctor(ConsentEntity consentEntity) {
         emailSender.sendRejectionEmailToDoctor(consentEntity.getConnect().getDoctor().getEmail(), consentEntity.getNewDoctor().getFirstName(), consentEntity.getConnect().getPatient().getFirstName());
     }
+
+    public List<ConsentEntity> findApprovedConsentByDoctorAndPatientByNewDoctor(DoctorEntity doctorEntity) {
+        return consentRepo.findApprovedConsentForDoctor(doctorEntity);
+    }
+
+    public ConnectionEntity findByNewDoctorAndID(DoctorEntity doctorEntity, Integer id) {
+        ConsentEntity consentEntity = consentRepo.findConsentById(id);
+        if(consentEntity==null || consentEntity.getNewDoctor()!=doctorEntity || !Objects.equals(consentEntity.getPatientConsent(), "accepted") || !Objects.equals(consentEntity.getSeniorDoctorConsent(), "accepted")){
+            return null;
+        }
+        return consentEntity.getConnect();
+    }
+
 }

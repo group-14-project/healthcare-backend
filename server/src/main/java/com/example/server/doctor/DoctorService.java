@@ -7,6 +7,7 @@ import com.example.server.hospital.HospitalEntity;
 import com.example.server.hospital.HospitalRepository;
 import com.example.server.hospitalSpecialization.HospitalSpecializationEntity;
 import com.example.server.hospitalSpecialization.HospitalSpecializationRepository;
+import com.example.server.patient.PatientEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -92,6 +93,7 @@ public class DoctorService {
         newDoctor.setEmail(email);
         newDoctor.setRegistrationId(registrationId);
         newDoctor.setDegree(degree);
+        newDoctor.setSenior(false);
         newDoctor.setPhoneNumber(phoneNumber);
         String randomPassword = passwordUtil.generateRandomPassword();
         newDoctor.setPassword(bCryptPasswordEncoder.encode(randomPassword));
@@ -250,5 +252,25 @@ public class DoctorService {
             doctorEntity.setActiveStatus(1);
         }
         doctorRepository.save(doctorEntity);
+    }
+
+    public void changeStatusToInACall(String doctorId) {
+        Integer id = Integer.valueOf(doctorId);
+        DoctorEntity doctor = doctorRepository.findByDoctorId(id);
+        doctor.setActiveStatus(3);
+        doctorRepository.save(doctor);
+    }
+
+    public void changeStatusToActive(String doctorId) {
+        Integer id = Integer.valueOf(doctorId);
+        DoctorEntity doctor = doctorRepository.findByDoctorId(id);
+        doctor.setActiveStatus(1);
+        doctorRepository.save(doctor);
+    }
+
+    public void passwordChange(String password, String email) {
+        DoctorEntity doctor = doctorRepository.findDoctorEntitiesByEmail(email);
+        doctor.setPassword(bCryptPasswordEncoder.encode(password));
+        doctorRepository.save(doctor);
     }
 }

@@ -1,28 +1,34 @@
 package com.example.server.signaling;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.server.doctor.DoctorService;
 //import com.gargoylesoftware.htmlunit.javascript.host.media.rtc.RTCSessionDescription;
 import jakarta.persistence.LockModeType;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.util.Pair;
+import com.example.server.webSocket.DoctorStatusScheduler;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.socket.TextMessage;
 
+import org.springframework.web.socket.TextMessage;
 import java.util.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Controller
 public class SignalingController {
 //    ArrayList<String> users = new ArrayList<String>();
+
+    private final DoctorService doctorService;
+    private final DoctorStatusScheduler doctorStatusScheduler;
 
     private final Map<String, List<String>> map = new ConcurrentHashMap<>();
 
@@ -30,6 +36,11 @@ public class SignalingController {
 
     @Autowired
     SimpMessagingTemplate simpMessagingTemplate;
+
+    public SignalingController(DoctorService doctorService, DoctorStatusScheduler doctorStatusScheduler) {
+        this.doctorService = doctorService;
+        this.doctorStatusScheduler = doctorStatusScheduler;
+    }
 
 
     @RequestMapping(value = "/",method =  RequestMethod.GET)
@@ -89,8 +100,7 @@ public class SignalingController {
 
     @MessageMapping("/call")
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    public void Call(String call){
-
+    public void Call(String call) throws IOException {
         System.out.println("Call: "+call);
 
         JSONObject jsonObject = new JSONObject(call);
@@ -117,6 +127,8 @@ public class SignalingController {
 
         if(currentCall.equals(call)){
             System.out.println("equals");
+            doctorService.changeStatusToInACall(doctorId);
+            doctorStatusScheduler.sendDoctorStatusUpdate();
             simpMessagingTemplate.convertAndSendToUser(doctorId,"/topic/call",call);
         }
         else{
@@ -223,7 +235,7 @@ public class SignalingController {
     }
 
     @MessageMapping("/disconnectCall")
-    public void DisconnectCall(String call){
+    public void DisconnectCall(String call) throws IOException {
         System.out.println(call);
         JSONObject jsonObject = new JSONObject(call);
 
@@ -249,16 +261,18 @@ public class SignalingController {
 //
 //        System.out.println(jsonObject.get(""));
         simpMessagingTemplate.convertAndSendToUser(jsonObject.getString("initiatedBy"), "/topic/disconnectCall", call);
+        doctorService.changeStatusToActive(doctorId);
+        doctorStatusScheduler.sendDoctorStatusUpdate();
 
         String currentCall = null;
         if(queue!=null && !queue.isEmpty()){
             currentCall = queue.get(0);
             simpMessagingTemplate.convertAndSendToUser(doctorId,"/topic/call",currentCall);
+            doctorService.changeStatusToInACall(doctorId);
+            doctorStatusScheduler.sendDoctorStatusUpdate();
         }
 
     }
-
-
 
     @MessageMapping("/rejectCall")
     public void RejectCall(String call) {

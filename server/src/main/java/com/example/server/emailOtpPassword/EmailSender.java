@@ -64,7 +64,7 @@ public class EmailSender {
                 Hi %s,
                 Your Password for the AROGYASHALA account is:
                 %s
-                Please login with you email and change your password
+                Please login with you emailID and password
                 Regards,
                 Team Arogyashala
                 """, name,password);

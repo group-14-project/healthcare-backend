@@ -156,4 +156,10 @@ public class HospitalService {
         HospitalEntity hospital = hospitalRepository.findByEmail(email);
         hospital.setJwtToken("Expired");
     }
+
+    public void passwordChange(String password, String email) {
+        HospitalEntity hospital = hospitalRepository.findByEmail(email);
+        hospital.setPassword(bCryptPasswordEncoder.encode(password));
+        hospitalRepository.save(hospital);
+    }
 }

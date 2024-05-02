@@ -35,6 +35,7 @@ public class DoctorEntity {
     private String degree;
     private Long phoneNumber;
     private Integer activeStatus;
+    private Boolean senior;
     private String otp;
     private LocalDateTime otpGeneratedTime;
     private String role;

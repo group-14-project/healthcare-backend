@@ -38,4 +38,8 @@ public interface ConsultationRepository extends JpaRepository<ConsultationEntity
             "WHERE c2.connectionId IN :connectionEntities " +
             "AND c2.connectionId = c.connectionId)")
     List<ConsultationEntity> findAllLatestByDoctor(List<ConnectionEntity> connectionEntities, LocalDateTime currentTime);
+
+
+    @Query("SELECT c FROM ConsultationEntity c WHERE c.connectionId = :connection AND c.appointmentDateAndTime < :now ORDER BY c.appointmentDateAndTime DESC LIMIT 1")
+    ConsultationEntity findLatestByConnection(ConnectionEntity connection, LocalDateTime now);
 }
