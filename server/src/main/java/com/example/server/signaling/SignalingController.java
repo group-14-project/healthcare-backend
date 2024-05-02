@@ -2,9 +2,12 @@ package com.example.server.signaling;
 
 import com.example.server.doctor.DoctorService;
 //import com.gargoylesoftware.htmlunit.javascript.host.media.rtc.RTCSessionDescription;
-import com.example.server.webSocket.DoctorStatusScheduler;
+import jakarta.persistence.LockModeType;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.util.Pair;
+import com.example.server.webSocket.DoctorStatusScheduler;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -12,6 +15,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import org.springframework.web.socket.TextMessage;
+import java.util.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,12 +25,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Controller
 public class SignalingController {
-    ArrayList<String> users = new ArrayList<String>();
+//    ArrayList<String> users = new ArrayList<String>();
 
     private final DoctorService doctorService;
     private final DoctorStatusScheduler doctorStatusScheduler;
 
     private final Map<String, List<String>> map = new ConcurrentHashMap<>();
+
+    private Map<String, Set<String>> roomUsers = new ConcurrentHashMap<>();
 
     @Autowired
     SimpMessagingTemplate simpMessagingTemplate;
@@ -48,19 +55,52 @@ public class SignalingController {
         return Test;
     }
 
-    @MessageMapping("/addUser")
-    public void addUser(String user){
-        System.out.println("Adding User");
-        users.add(user);
-        for (String u :users) {
-            System.out.println(u);
-        }
-        System.out.println("User Added Successfully");
+
+    @MessageMapping("/userJoin")
+    public void UserJoin(String message){
+
+        System.out.println("join room msg: "+message);
+
+        JSONObject msg = new JSONObject(message);
+        System.out.println("join room msg: "+message);
+
+        String roomId = msg.getString("roomId");
+        String userId = msg.getString("id");
+        String userName = msg.getString("displayName");
+
+        System.out.println(roomId+' '+userId+' '+userName);
+
+        roomUsers.computeIfAbsent(roomId, key -> new HashSet<>()).add(userId);
+
+        JSONObject obj = new JSONObject();
+        obj.put("userId", userId);
+        obj.put("userName", userName);
+
+        Set<String> users = roomUsers.getOrDefault(roomId, Collections.emptySet());
+
+        obj.put("users",users);
+
+        String replyMsg = obj.toString();
+
+        users.forEach(user-> System.out.println(user));
+
+        users.forEach(user -> simpMessagingTemplate.convertAndSendToUser(user,"/topic/userJoin", replyMsg));
+
     }
 
-    @MessageMapping("/call")
-    public void Call(String call) throws IOException {
+//    @MessageMapping("/addUser")
+//    public void addUser(String user){
+//        System.out.println("Adding User");
+//        users.add(user);
+//        for (String u :users) {
+//            System.out.println(u);
+//        }
+//        System.out.println("User Added Successfully");
+//    }
 
+    @MessageMapping("/call")
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    public void Call(String call) throws IOException {
         System.out.println("Call: "+call);
 
         JSONObject jsonObject = new JSONObject(call);
@@ -133,6 +173,56 @@ public class SignalingController {
         System.out.println("Candidate Sent");
     }
 
+
+    @MessageMapping("/seniorOffer")
+    public void SeniorOffer(String offer){
+
+//        System.out.println("Offer Came");
+        JSONObject jsonObject = new JSONObject(offer);
+//        System.out.println(jsonObject.get("offer"));
+//        System.out.println(jsonObject.get("toUser"));
+//        System.out.println(jsonObject.get("fromUser"));
+        simpMessagingTemplate.convertAndSendToUser(jsonObject.getString("toUser"),"/topic/seniorOffer",offer);
+        System.out.println("Offer Sent");
+
+    }
+
+    @MessageMapping("/seniorAnswer")
+    public void SeniorAnswer(String answer){
+//        System.out.println("Answer came");
+//        System.out.println(answer);
+        JSONObject jsonObject = new JSONObject(answer);
+//        System.out.println(jsonObject.get("toUser"));
+//        System.out.println(jsonObject.get("fromUser"));
+//        System.out.println(jsonObject.get("answer"));
+        simpMessagingTemplate.convertAndSendToUser(jsonObject.getString("toUser"),"/topic/seniorAnswer",answer);
+        System.out.println("Answer Sent");
+    }
+
+    @MessageMapping("/seniorJoin")
+    public void SeniorJoin(String msg){
+//        System.out.println("Answer came");
+//        System.out.println(answer);
+        JSONObject jsonObject = new JSONObject(msg);
+//        System.out.println(jsonObject.get("toUser"));
+//        System.out.println(jsonObject.get("fromUser"));
+//        System.out.println(jsonObject.get("answer"));
+        simpMessagingTemplate.convertAndSendToUser(jsonObject.getString("toUser"),"/topic/seniorJoin",msg);
+        System.out.println("notification Sent");
+    }
+    @MessageMapping("/seniorCandidate")
+    public void SeniorCandidate(String candidate){
+//        System.out.println("Candidate came");
+        JSONObject jsonObject = new JSONObject(candidate);
+//        System.out.println(jsonObject.get("toUser"));
+//        System.out.println(jsonObject.get("fromUser"));
+//        System.out.println(jsonObject.get("candidate"));
+        simpMessagingTemplate.convertAndSendToUser(jsonObject.getString("toUser"),"/topic/seniorCandidate",candidate);
+        System.out.println("Candidate Sent");
+    }
+
+
+
     @MessageMapping("/acceptCall")
     public void AcceptCall(String call){
         System.out.println(call);
@@ -167,7 +257,7 @@ public class SignalingController {
         List<String> queue = map.get(doctorId);
         queue.remove(0);
 
-
+        System.out.println("disconnect call jsonObject: "+jsonObject);
 //
 //        System.out.println(jsonObject.get(""));
         simpMessagingTemplate.convertAndSendToUser(jsonObject.getString("initiatedBy"), "/topic/disconnectCall", call);
@@ -185,7 +275,7 @@ public class SignalingController {
     }
 
     @MessageMapping("/rejectCall")
-    public void RejectCall(String call){
+    public void RejectCall(String call) {
         JSONObject jsonObject = new JSONObject(call);
         JSONObject jsonObjectTo = new JSONObject(jsonObject.getString("initiatedBy"));
 
