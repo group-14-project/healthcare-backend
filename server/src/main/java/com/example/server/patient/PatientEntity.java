@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -57,6 +58,10 @@ public class PatientEntity{
     private String jwtToken;
 
     private LocalDateTime lastAccessTime;
+
+    private boolean deleteEntry;
+
+    private LocalDate deletionTime;
 
     @OneToMany(mappedBy = "patient")
     private List<ConnectionEntity> connection;

@@ -7,6 +7,7 @@ import com.example.server.common.CommonService;
 import com.example.server.connection.ConnectionEntity;
 import com.example.server.connection.ConnectionService;
 import com.example.server.consent.ConsentEntity;
+import com.example.server.consent.ConsentRepository;
 import com.example.server.consent.ConsentService;
 import com.example.server.consultation.ConsultationService;
 import com.example.server.doctor.DoctorEntity;
@@ -34,7 +35,9 @@ import org.springframework.web.bind.annotation.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/patient")
@@ -53,9 +56,15 @@ public class   PatientController {
     private final ConsultationService consultation;
     private final ReviewService reviewService;
 
+    private final ConsentRepository consentRepository;
+
+    private final ConnectionService connectionService;
+
     private final CommonService commonService;
 
-    public PatientController(PatientService patient, EncryptFile encryptFile, EmailSender emailSender, AwsServiceImplementation awsServiceImplementation, JWTService jwtService, ReportService report, JWTTokenReCheck jwtTokenReCheck, ConsentService consent, DoctorRepository doctorRepository, ConnectionService connection, ConsultationService consultation, ReviewService reviewService, CommonService commonService, DoctorService doctorService){
+
+
+    public PatientController(PatientService patient, EncryptFile encryptFile, EmailSender emailSender, AwsServiceImplementation awsServiceImplementation, JWTService jwtService, ReportService report, JWTTokenReCheck jwtTokenReCheck, ConsentService consent, DoctorRepository doctorRepository, ConnectionService connection, ConsultationService consultation, ReviewService reviewService, CommonService commonService, DoctorService doctorService, ConsentRepository consentRepository, ConnectionService connectionService){
         this.patient = patient;
         this.encryptFile = encryptFile;
         this.emailSender = emailSender;
@@ -69,6 +78,8 @@ public class   PatientController {
         this.consultation = consultation;
         this.reviewService = reviewService;
         this.commonService = commonService;
+        this.consentRepository = consentRepository;
+        this.connectionService = connectionService;
     }
 
 
@@ -84,12 +95,13 @@ public class   PatientController {
                 body.getUser().getOtp()
         );
 
-        if(newPatient==null){
+        if(newPatient==null)
+        {
             ErrorMessage errorMessage = new ErrorMessage();
             errorMessage.setErrorMessage("Wrong OTP or email ID");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
         }
-
+        newPatient.setDeleteEntry(false);
         List<ConnectionEntity> connectionEntities = connection.findAllConnections(newPatient);
         List<DoctorDetailsResponse> doctorDetailsResponses = new ArrayList<>();
         for(ConnectionEntity connectionEntity: connectionEntities){
@@ -115,7 +127,6 @@ public class   PatientController {
         patient.setLastAccessTime(newPatient.getEmail());
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
-
         return ResponseEntity.ok().headers(headers).body(patientResponse);
     }
 
@@ -144,6 +155,18 @@ public class   PatientController {
             errorMessage.setErrorMessage("Wrong Email or Wrong Password");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
         }
+        LocalDate deletionTime = currentPatient.getDeletionTime();
+        if(deletionTime!=null)
+        {
+            LocalDate currentDate = LocalDate.now();
+            long daysBetween = ChronoUnit.DAYS.between(deletionTime, currentDate);
+            if (daysBetween > (365 * 2))
+            {
+                ErrorMessage errorMessage = new ErrorMessage();
+                errorMessage.setErrorMessage("Deleted Account try login with new email");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+            }
+        }
         String otp = emailSender.sendOtpEmail(
                 body.getUser().getEmail(),
                 currentPatient.getFirstName()
@@ -157,11 +180,12 @@ public class   PatientController {
 
     @PostMapping("/signupotp")
     ResponseEntity<?> sendEmailForSignup(@RequestBody SignupPatientRequest body){
-        if(patient.checkPatientVerification(body.getPatient().getEmail())){
+        if(patient.checkPatientVerification(body.getPatient().getEmail())) {
             ErrorMessage errorMessage = new ErrorMessage();
-            errorMessage.setErrorMessage("User has already signed up");
+            errorMessage.setErrorMessage("Email Already Exist");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
         }
+
         String otp = emailSender.sendOtpEmail(
                 body.getPatient().getEmail(),
                 body.getPatient().getFirstName()
@@ -546,5 +570,28 @@ public class   PatientController {
         return ResponseEntity.ok(reportDetailsResponses);
     }
 
-
+    @DeleteMapping("/deletePatient")
+    public ResponseEntity<?> deletePatient(HttpServletRequest request)
+    {
+        PatientEntity patientEntity = jwtTokenReCheck.checkJWTAndSessionPatient(request);
+        if (patientEntity == null)
+        {
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setErrorMessage("You have been logged out");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        List<ConnectionEntity> connectionEntities=connectionService.findPatientConnection(patientEntity);
+        if(connectionEntities!=null) {
+            for (ConnectionEntity connectionEntity : connectionEntities) {
+                ConsentEntity consentEntity = consentRepository.findConsentById(connectionEntity.getId());
+                if (consentEntity != null) {
+                    consent.withdrawPatientConsent(consentEntity.getId());
+                }
+            }
+        }
+        patient.deleteAccount(patientEntity.getEmail());
+        SuccessMessage successMessage = new SuccessMessage();
+        successMessage.setSuccessMessage("Account has been deleted");
+        return ResponseEntity.ok(successMessage);
+    }
 }

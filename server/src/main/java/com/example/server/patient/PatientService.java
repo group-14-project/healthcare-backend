@@ -10,6 +10,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -37,6 +38,14 @@ public class PatientService {
             return null;
         }
         return patient;
+    }
+
+    public void deleteAccount(String email)
+    {
+        PatientEntity patient = patientRepo.findPatientEntitiesByEmail(email);
+        patient.setDeleteEntry(true);
+        patient.setDeletionTime(LocalDate.now());
+        patientRepo.save(patient);
     }
 
 
