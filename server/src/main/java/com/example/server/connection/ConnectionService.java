@@ -80,4 +80,10 @@ public class ConnectionService {
                 .filter(connection -> connection.getDoctor().getHospitalSpecialization().getHospital().getHospitalName().equals(newHospital.getHospitalName()))
                 .collect(Collectors.toList());
     }
+
+    public List<ConnectionEntity> findPatientConnection(PatientEntity patientEntity)
+    {
+        List<ConnectionEntity> connectionEntities=connectionRepo.findByPatient(patientEntity);
+        return connectionEntities;
+    }
 }
