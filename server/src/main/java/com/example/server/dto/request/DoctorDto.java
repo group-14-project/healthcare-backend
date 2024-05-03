@@ -8,7 +8,7 @@ public class DoctorDto
     private String firstName;
     private String lastName;
     private String registrationId;
-    private Long phoneNumber;
+    private String phoneNumber;
     private String degree;
 }
 

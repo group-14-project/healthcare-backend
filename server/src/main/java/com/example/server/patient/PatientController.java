@@ -10,6 +10,7 @@ import com.example.server.consent.ConsentService;
 import com.example.server.consultation.ConsultationService;
 import com.example.server.doctor.DoctorEntity;
 import com.example.server.doctor.DoctorRepository;
+import com.example.server.doctor.DoctorService;
 import com.example.server.dto.request.*;
 import com.example.server.dto.response.*;
 import com.example.server.emailOtpPassword.EmailSender;
@@ -28,7 +29,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -51,7 +51,9 @@ public class   PatientController {
     private final ConnectionService connection;
     private final ConsultationService consultation;
     private final ReviewService reviewService;
-    public PatientController(PatientService patient, EncryptFile encryptFile, EmailSender emailSender, AwsServiceImplementation awsServiceImplementation, JWTService jwtService, ReportService report, JWTTokenReCheck jwtTokenReCheck, ConsentService consent, DoctorRepository doctorRepository, ConnectionService connection, ConsultationService consultation, ReviewService reviewService){
+
+    private final DoctorService doctorService;
+    public PatientController(PatientService patient, EncryptFile encryptFile, EmailSender emailSender, AwsServiceImplementation awsServiceImplementation, JWTService jwtService, ReportService report, JWTTokenReCheck jwtTokenReCheck, ConsentService consent, DoctorRepository doctorRepository, ConnectionService connection, ConsultationService consultation, ReviewService reviewService, DoctorService doctorService){
         this.patient = patient;
         this.encryptFile = encryptFile;
         this.emailSender = emailSender;
@@ -64,6 +66,7 @@ public class   PatientController {
         this.connection = connection;
         this.consultation = consultation;
         this.reviewService = reviewService;
+        this.doctorService = doctorService;
     }
 
 
@@ -102,7 +105,7 @@ public class   PatientController {
         List<AppointmentDetailsDto> futureAppointmentDetails = consultation.findFutureAppointments(connectionEntities);
 
         PatientResponse patientResponse = new PatientResponse(newPatient.getId(),
-                newPatient.getEmail(), newPatient.getFirstName(), newPatient.getLastName(), newPatient.getHeight(), newPatient.getWeight(), newPatient.getBloodGroup(),
+                newPatient.getEmail(), newPatient.getFirstName(), newPatient.getLastName(), doctorService.decrypt(newPatient.getHeight()),doctorService.decrypt(newPatient.getWeight()),doctorService.decrypt(newPatient.getBloodGroup()),
                 newPatient.getGender(), newPatient.isFirstTimeLogin(), pastAppointmentDetails, futureAppointmentDetails, doctorDetailsResponses);
 
         String jwtToken = jwtService.createJwt(newPatient.getEmail(), newPatient.getRole());
@@ -210,9 +213,8 @@ public class   PatientController {
         List<AppointmentDetailsDto> futureAppointmentDetails = consultation.findFutureAppointments(connectionEntities);
 
         PatientUpdateDetails patientResponse = new PatientUpdateDetails(
-                newPatient.getEmail(), newPatient.getFirstName(), newPatient.getLastName(), newPatient.getHeight(), newPatient.getWeight(), newPatient.getBloodGroup(),
+                newPatient.getEmail(), newPatient.getFirstName(), newPatient.getLastName(), doctorService.decrypt(newPatient.getHeight()), doctorService.decrypt(newPatient.getWeight()),doctorService.decrypt(newPatient.getBloodGroup()),
                 newPatient.getGender(), newPatient.isFirstTimeLogin(), pastAppointmentDetails, futureAppointmentDetails);
-
 
         patient.setLastAccessTime(patientEntity.getEmail());
         return ResponseEntity.ok(patientResponse);

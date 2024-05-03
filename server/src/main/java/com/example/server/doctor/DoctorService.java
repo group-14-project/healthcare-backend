@@ -11,12 +11,12 @@ import org.json.JSONObject;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+import java.security.Key;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -82,7 +82,7 @@ public class DoctorService {
         return doctorRepository.findDoctorEntitiesByEmail(email);
     }
 
-    public DoctorEntity registerNewDoctor(String firstName, String lastName,  String email, String registrationId, String degree, Long phoneNumber){
+    public DoctorEntity registerNewDoctor(String firstName, String lastName,  String email, String registrationId, String degree, String phoneNumber){
         DoctorEntity doctor = doctorRepository.findDoctorEntitiesByEmail(email);
         if(doctor != null){
             return null;
@@ -95,7 +95,7 @@ public class DoctorService {
         newDoctor.setRegistrationId(registrationId);
         newDoctor.setDegree(degree);
         newDoctor.setSenior(false);
-        newDoctor.setPhoneNumber(phoneNumber);
+        newDoctor.setPhoneNumber(encrypt(phoneNumber));
         String randomPassword = passwordUtil.generateRandomPassword();
         newDoctor.setPassword(bCryptPasswordEncoder.encode(randomPassword));
         newDoctor.setFirstTimeLogin(false);
@@ -331,5 +331,37 @@ public class DoctorService {
             callDetailsToSeniorDrList.add(callDetailsToSeniorDr);
         }
         return callDetailsToSeniorDrList;
+    }
+
+
+
+    private static final String SECRET_KEY="M)KZad)c7#8SRNoCa}*$l2r8fYcyyt/A"; // Change this to your secret key
+
+    public String encrypt(String strToEncrypt) {
+        try {
+            Key key = new SecretKeySpec(SECRET_KEY.getBytes(), "AES");
+            Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, key);
+            return Base64.getEncoder().encodeToString(cipher.doFinal(strToEncrypt.getBytes()));
+        } catch (Exception e) {
+            System.out.println("Error while encrypting: " + e.toString());
+        }
+        return null;
+    }
+
+
+    public String decrypt(String strToDecrypt) {
+        try {
+            if (strToDecrypt == null || strToDecrypt.isEmpty()) {
+                return null;
+            }
+            Key key = new SecretKeySpec(SECRET_KEY.getBytes(), "AES");
+            Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+            cipher.init(Cipher.DECRYPT_MODE, key);
+            return new String(cipher.doFinal(Base64.getDecoder().decode(strToDecrypt)));
+        } catch (Exception e) {
+            System.out.println("Error while decrypting: " + e.toString());
+        }
+        return null;
     }
 }

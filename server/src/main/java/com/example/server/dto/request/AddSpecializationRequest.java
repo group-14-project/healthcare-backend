@@ -26,5 +26,5 @@ public class AddSpecializationRequest {
         private String degree;
 
         @JsonProperty("phoneNumber")
-        private Long phoneNumber;
+        private String phoneNumber;
 }

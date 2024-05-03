@@ -8,7 +8,7 @@ public class PatientDetailsRequest
 
     private String lastName;
 
-    private Long phoneNumber;
+    private String phoneNumber;
 
     private String height;
 
