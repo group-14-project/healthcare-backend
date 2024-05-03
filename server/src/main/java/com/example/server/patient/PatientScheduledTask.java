@@ -46,15 +46,15 @@ public class PatientScheduledTask
                         reportRepository.deleteById(reportEntity.getId());
                     }
                 }
-                patientEntity.setHeight(null);
-                patientEntity.setWeight(null);
-                patientEntity.setDeletionTime(null);
-                patientEntity.setAddress(null);
-                patientEntity.setGender(null);
-                patientEntity.setBloodGroup(null);
-                patientEntity.setCity(null);
-                patientEntity.setPhoneNumber(null);
-                patientEntity.setPinCode(null);
+                patientEntity.setHeight("null");
+                patientEntity.setWeight("null");
+                patientEntity.setDeletionTime(LocalDate.MAX);
+                patientEntity.setAddress("null");
+                patientEntity.setGender("null");
+                patientEntity.setBloodGroup("null");
+                patientEntity.setCity("null");
+                patientEntity.setPhoneNumber("null");
+                patientEntity.setPinCode("null");
                 patientRepository.save(patientEntity);
             }
         }
