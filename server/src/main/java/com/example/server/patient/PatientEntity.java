@@ -28,7 +28,7 @@ public class PatientEntity{
 
     private String password;
 
-    private Long phoneNumber;
+    private String phoneNumber;
 
     private String height;
 

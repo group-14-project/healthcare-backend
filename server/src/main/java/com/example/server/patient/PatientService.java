@@ -1,5 +1,6 @@
 package com.example.server.patient;
 
+import com.example.server.doctor.DoctorService;
 import com.example.server.dto.request.PatientDetailsRequest;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ public class PatientService {
     private final PatientRepository patientRepo;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    private final DoctorService doctorService;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -55,9 +57,11 @@ public class PatientService {
         return new BCryptPasswordEncoder();
     }
 
-    public PatientService(PatientRepository patientRepo, BCryptPasswordEncoder bCryptPasswordEncoder){
+
+    public PatientService(PatientRepository patientRepo, BCryptPasswordEncoder bCryptPasswordEncoder, DoctorService doctorService){
         this.patientRepo = patientRepo;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.doctorService = doctorService;
     }
 
     //This is to register a new patient
@@ -135,13 +139,13 @@ public class PatientService {
     public  PatientEntity updateDetails(PatientDetailsRequest body, String email)
     {
         PatientEntity patient=patientRepo.findPatientEntitiesByEmail(email);
-        patient.setPhoneNumber(body.getPhoneNumber());
-        patient.setWeight(body.getWeight());
-        patient.setHeight(body.getHeight());
-        patient.setBloodGroup(body.getBloodGroup());
+        patient.setPhoneNumber(doctorService.encrypt(body.getPhoneNumber()));
+        patient.setWeight(doctorService.encrypt(body.getWeight()));
+        patient.setHeight(doctorService.encrypt(body.getHeight()));
+        patient.setBloodGroup(doctorService.encrypt(body.getBloodGroup()));
         patient.setGender(body.getGender());
-        patient.setAddress(body.getAddress());
-        patient.setPinCode(body.getPinCode());
+        patient.setAddress(doctorService.encrypt(body.getAddress()));
+        patient.setPinCode(doctorService.encrypt(body.getPinCode()));
         patient.setFirstTimeLogin(true);
         patient.setLastAccessTime(LocalDateTime.now());
         return patientRepo.save(patient);

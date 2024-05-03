@@ -33,7 +33,7 @@ public class DoctorEntity {
     private String password;
     private String registrationId;
     private String degree;
-    private Long phoneNumber;
+    private String phoneNumber;
     private Integer activeStatus;
     private Boolean senior;
     private String otp;

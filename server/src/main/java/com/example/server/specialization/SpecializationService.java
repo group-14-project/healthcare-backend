@@ -1,9 +1,6 @@
 package com.example.server.specialization;
-
 import org.springframework.stereotype.Service;
-
 import java.util.List;
-
 @Service
 public class SpecializationService {
     private final SpecializationRepository specializationRepository;
