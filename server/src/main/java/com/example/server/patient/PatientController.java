@@ -3,6 +3,7 @@ package com.example.server.patient;
 import com.example.server.aws.AwsServiceImplementation;
 import com.example.server.aws.EncryptFile;
 import com.example.server.aws.FileTypeEnum;
+import com.example.server.common.CommonService;
 import com.example.server.connection.ConnectionEntity;
 import com.example.server.connection.ConnectionService;
 import com.example.server.consent.ConsentEntity;
@@ -52,8 +53,9 @@ public class   PatientController {
     private final ConsultationService consultation;
     private final ReviewService reviewService;
 
-    private final DoctorService doctorService;
-    public PatientController(PatientService patient, EncryptFile encryptFile, EmailSender emailSender, AwsServiceImplementation awsServiceImplementation, JWTService jwtService, ReportService report, JWTTokenReCheck jwtTokenReCheck, ConsentService consent, DoctorRepository doctorRepository, ConnectionService connection, ConsultationService consultation, ReviewService reviewService, DoctorService doctorService){
+    private final CommonService commonService;
+
+    public PatientController(PatientService patient, EncryptFile encryptFile, EmailSender emailSender, AwsServiceImplementation awsServiceImplementation, JWTService jwtService, ReportService report, JWTTokenReCheck jwtTokenReCheck, ConsentService consent, DoctorRepository doctorRepository, ConnectionService connection, ConsultationService consultation, ReviewService reviewService, CommonService commonService, DoctorService doctorService){
         this.patient = patient;
         this.encryptFile = encryptFile;
         this.emailSender = emailSender;
@@ -66,7 +68,7 @@ public class   PatientController {
         this.connection = connection;
         this.consultation = consultation;
         this.reviewService = reviewService;
-        this.doctorService = doctorService;
+        this.commonService = commonService;
     }
 
 
@@ -105,7 +107,7 @@ public class   PatientController {
         List<AppointmentDetailsDto> futureAppointmentDetails = consultation.findFutureAppointments(connectionEntities);
 
         PatientResponse patientResponse = new PatientResponse(newPatient.getId(),
-                newPatient.getEmail(), newPatient.getFirstName(), newPatient.getLastName(), doctorService.decrypt(newPatient.getHeight()),doctorService.decrypt(newPatient.getWeight()),doctorService.decrypt(newPatient.getBloodGroup()),
+                newPatient.getEmail(), newPatient.getFirstName(), newPatient.getLastName(), commonService.decrypt(newPatient.getHeight()),commonService.decrypt(newPatient.getWeight()),commonService.decrypt(newPatient.getBloodGroup()),
                 newPatient.getGender(), newPatient.isFirstTimeLogin(), pastAppointmentDetails, futureAppointmentDetails, doctorDetailsResponses);
 
         String jwtToken = jwtService.createJwt(newPatient.getEmail(), newPatient.getRole());
@@ -213,7 +215,7 @@ public class   PatientController {
         List<AppointmentDetailsDto> futureAppointmentDetails = consultation.findFutureAppointments(connectionEntities);
 
         PatientUpdateDetails patientResponse = new PatientUpdateDetails(
-                newPatient.getEmail(), newPatient.getFirstName(), newPatient.getLastName(), doctorService.decrypt(newPatient.getHeight()), doctorService.decrypt(newPatient.getWeight()),doctorService.decrypt(newPatient.getBloodGroup()),
+                newPatient.getEmail(), newPatient.getFirstName(), newPatient.getLastName(), commonService.decrypt(newPatient.getHeight()), commonService.decrypt(newPatient.getWeight()),commonService.decrypt(newPatient.getBloodGroup()),
                 newPatient.getGender(), newPatient.isFirstTimeLogin(), pastAppointmentDetails, futureAppointmentDetails);
 
         patient.setLastAccessTime(patientEntity.getEmail());

@@ -1,5 +1,6 @@
 package com.example.server.patient;
 
+import com.example.server.common.CommonService;
 import com.example.server.doctor.DoctorService;
 import com.example.server.dto.request.PatientDetailsRequest;
 import org.modelmapper.ModelMapper;
@@ -17,7 +18,7 @@ public class PatientService {
     private final PatientRepository patientRepo;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    private final DoctorService doctorService;
+    private final CommonService commonService;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -58,10 +59,10 @@ public class PatientService {
     }
 
 
-    public PatientService(PatientRepository patientRepo, BCryptPasswordEncoder bCryptPasswordEncoder, DoctorService doctorService){
+    public PatientService(PatientRepository patientRepo, BCryptPasswordEncoder bCryptPasswordEncoder, DoctorService doctorService, CommonService commonService){
         this.patientRepo = patientRepo;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
-        this.doctorService = doctorService;
+        this.commonService = commonService;
     }
 
     //This is to register a new patient
@@ -139,13 +140,13 @@ public class PatientService {
     public  PatientEntity updateDetails(PatientDetailsRequest body, String email)
     {
         PatientEntity patient=patientRepo.findPatientEntitiesByEmail(email);
-        patient.setPhoneNumber(doctorService.encrypt(body.getPhoneNumber()));
-        patient.setWeight(doctorService.encrypt(body.getWeight()));
-        patient.setHeight(doctorService.encrypt(body.getHeight()));
-        patient.setBloodGroup(doctorService.encrypt(body.getBloodGroup()));
+        patient.setPhoneNumber(commonService.encrypt(body.getPhoneNumber()));
+        patient.setWeight(commonService.encrypt(body.getWeight()));
+        patient.setHeight(commonService.encrypt(body.getHeight()));
+        patient.setBloodGroup(commonService.encrypt(body.getBloodGroup()));
         patient.setGender(body.getGender());
-        patient.setAddress(doctorService.encrypt(body.getAddress()));
-        patient.setPinCode(doctorService.encrypt(body.getPinCode()));
+        patient.setAddress(commonService.encrypt(body.getAddress()));
+        patient.setPinCode(commonService.encrypt(body.getPinCode()));
         patient.setFirstTimeLogin(true);
         patient.setLastAccessTime(LocalDateTime.now());
         return patientRepo.save(patient);
