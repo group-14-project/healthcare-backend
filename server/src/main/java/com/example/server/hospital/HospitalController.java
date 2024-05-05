@@ -21,6 +21,7 @@ import com.example.server.specialization.SpecializationService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -93,6 +94,12 @@ public class HospitalController
         hospital.setLastAccessTime(newHospital.getEmail());
 
         HttpHeaders headers = new HttpHeaders();
+        ResponseCookie cookie = ResponseCookie.from("jwtToken", jwtToken)
+                .httpOnly(true)
+                .path("/") // Set the cookie path as per your requirements
+                .maxAge(36000) // Set the cookie expiration time in seconds
+                .build();
+        headers.add(HttpHeaders.SET_COOKIE, cookie.toString());
         headers.setBearerAuth(jwtToken);
 
         return ResponseEntity.ok().headers(headers).body(hospitalResponse);

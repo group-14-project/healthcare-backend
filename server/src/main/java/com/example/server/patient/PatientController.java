@@ -28,6 +28,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.val;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -125,8 +126,17 @@ public class   PatientController {
         String jwtToken = jwtService.createJwt(newPatient.getEmail(), newPatient.getRole());
         patient.setJwtToken(jwtToken, newPatient.getEmail());
         patient.setLastAccessTime(newPatient.getEmail());
+
+        ResponseCookie cookie = ResponseCookie.from("jwtToken", jwtToken)
+                .httpOnly(true)
+                .path("/") // Set the cookie path as per your requirements
+                .maxAge(36000) // Set the cookie expiration time in seconds
+                .build();
         HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.SET_COOKIE, cookie.toString());
+
         headers.setBearerAuth(jwtToken);
+
         return ResponseEntity.ok().headers(headers).body(patientResponse);
     }
 
