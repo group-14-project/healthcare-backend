@@ -576,7 +576,7 @@ public class   PatientController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
         }
         List<ConnectionEntity> connectionEntities = connection.findAllConnections(patientEntity);
-        List<ReportDetailsResponse> reportDetailsResponses = report.findAllReportsByConnectionListAndBlank(connectionEntities);
+        List<ReportDetailsResponse> reportDetailsResponses = report.findAllReportsByConnectionListAndBlank(connectionEntities, patientEntity);
         return ResponseEntity.ok(reportDetailsResponses);
     }
 

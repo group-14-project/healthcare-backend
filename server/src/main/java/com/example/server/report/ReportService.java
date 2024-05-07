@@ -52,19 +52,21 @@ public class ReportService {
         return reportDetailsResponses;
     }
 
-    public List<ReportDetailsResponse> findAllReportsByConnectionListAndBlank(List<ConnectionEntity> connectionEntities) {
+    public List<ReportDetailsResponse> findAllReportsByConnectionListAndBlank(List<ConnectionEntity> connectionEntities, PatientEntity patientEntity) {
         List<ReportEntity> reportEntities = reportRepository.findAllByConnectionsInOrConnectionsIsNull(connectionEntities);
         List<ReportDetailsResponse> reportDetailsResponses = new ArrayList<>();
         for(ReportEntity reportEntity : reportEntities){
-            ReportDetailsResponse response = new ReportDetailsResponse();
-            response.setReportName(reportEntity.getReportName());
-            response.setId(reportEntity.getId());
-            response.setLocalDateTime(reportEntity.getDateTime());
-            if(reportEntity.getCon()!=null){
-                response.setDoctorFirstName(reportEntity.getCon().getDoctor().getFirstName());
-                response.setDoctorFirstName(reportEntity.getCon().getDoctor().getLastName());
+            if(reportEntity.getPat()==patientEntity) {
+                ReportDetailsResponse response = new ReportDetailsResponse();
+                response.setReportName(reportEntity.getReportName());
+                response.setId(reportEntity.getId());
+                response.setLocalDateTime(reportEntity.getDateTime());
+                if (reportEntity.getCon() != null) {
+                    response.setDoctorFirstName(reportEntity.getCon().getDoctor().getFirstName());
+                    response.setDoctorLastName(reportEntity.getCon().getDoctor().getLastName());
+                }
+                reportDetailsResponses.add(response);
             }
-            reportDetailsResponses.add(response);
         }
         return reportDetailsResponses;
     }
