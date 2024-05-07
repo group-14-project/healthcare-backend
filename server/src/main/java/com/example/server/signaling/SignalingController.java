@@ -249,13 +249,17 @@ public class SignalingController {
 
 
     @MessageMapping("/acceptCall")
-    public void AcceptCall(String call){
+    public void AcceptCall(String call) throws IOException {
         System.out.println(call);
         JSONObject jsonObject = new JSONObject(call);
         JSONObject jsonObjectTo = new JSONObject(jsonObject.getString("initiatedBy"));
-//        JSONObject jsonObjectFrom = new JSONObject(jsonObject.getString("acceptedBy"));
+        JSONObject jsonObjectFrom = new JSONObject(jsonObject.getString("acceptedBy"));
+        String doctorId = jsonObjectTo.getString("remoteId");
+
 //        System.out.println(jsonObject.get("acceptedBy"));
 //        System.out.println(jsonObject.get("initiatedBy"));
+        doctorService.changeStatusToInACall(doctorId);
+        doctorStatusScheduler.sendDoctorStatusUpdate();
         simpMessagingTemplate.convertAndSendToUser(jsonObjectTo.getString("caller"), "/topic/acceptCall", call);
     }
 
@@ -293,8 +297,8 @@ public class SignalingController {
         if(queue!=null && !queue.isEmpty()){
             currentCall = queue.get(0);
             simpMessagingTemplate.convertAndSendToUser(doctorId,"/topic/call",currentCall);
-            doctorService.changeStatusToInACall(doctorId);
-            doctorStatusScheduler.sendDoctorStatusUpdate();
+//            doctorService.changeStatusToInACall(doctorId);
+//            doctorStatusScheduler.sendDoctorStatusUpdate();
         }
 
     }

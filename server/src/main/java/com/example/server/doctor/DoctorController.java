@@ -415,8 +415,8 @@ public class DoctorController {
                 .body(decryptedBytes);
     }
 
-    @GetMapping("/changeStatus")
-    public ResponseEntity<?> changeStatus(HttpServletRequest request) throws IOException {
+    @GetMapping("/changeStatus/{id}")
+    public ResponseEntity<?> changeStatus(@PathVariable Integer id,  HttpServletRequest request) throws IOException {
         System.out.println("hello from change status");
         DoctorEntity doctorEntity = jwtTokenReCheck.checkJWTAndSessionDoctor(request);
         if (doctorEntity == null) {
@@ -425,7 +425,7 @@ public class DoctorController {
             errorMessage.setErrorMessage("You have been logged out");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
         }
-        doctor.changeStatus(doctorEntity);
+        doctor.changeStatus(doctorEntity, id);
         doctorStatusScheduler.sendDoctorStatusUpdate();
         doctor.setLastAccessTime(doctorEntity.getEmail());
         SuccessMessage successMessage = new SuccessMessage();

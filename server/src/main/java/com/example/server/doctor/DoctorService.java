@@ -252,15 +252,9 @@ public class DoctorService {
         doctor.setJwtToken("Expired");
     }
 
-    public void changeStatus(DoctorEntity doctorEntity) {
-        System.out.println("inside change Status");
-        Integer activeStatus = doctorEntity.getActiveStatus();
-        if(activeStatus==1){
-            doctorEntity.setActiveStatus(2);
-        }else{
-            doctorEntity.setActiveStatus(1);
-        }
-        doctorRepository.save(doctorEntity);
+    public void changeStatus(DoctorEntity doctorEntity, Integer id) {
+       doctorEntity.setActiveStatus(id);
+       doctorRepository.save(doctorEntity);
     }
 
     public void changeStatusToInACall(String doctorId) {
