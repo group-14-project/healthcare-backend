@@ -205,6 +205,7 @@ public class DoctorService {
         DoctorEntity doctor = doctorRepository.findDoctorEntitiesByEmail(email);
         doctor.setFirstTimeLogin(true);
         doctor.setPassword(bCryptPasswordEncoder.encode(password));
+        doctor.setFirstTimeLogin(true);
         return doctorRepository.save(doctor);
     }
 
@@ -252,6 +253,7 @@ public class DoctorService {
     }
 
     public void changeStatus(DoctorEntity doctorEntity) {
+        System.out.println("inside change Status");
         Integer activeStatus = doctorEntity.getActiveStatus();
         if(activeStatus==1){
             doctorEntity.setActiveStatus(2);

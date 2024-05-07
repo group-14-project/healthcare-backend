@@ -411,6 +411,7 @@ public class DoctorController {
 
     @GetMapping("/changeStatus")
     public ResponseEntity<?> changeStatus(HttpServletRequest request) throws IOException {
+        System.out.println("hello from change status");
         DoctorEntity doctorEntity = jwtTokenReCheck.checkJWTAndSessionDoctor(request);
         if (doctorEntity == null) {
             doctorStatusScheduler.sendDoctorStatusUpdate();
