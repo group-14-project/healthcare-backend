@@ -25,10 +25,10 @@ public class ConsultationService {
         this.emailSender = emailSender;
     }
 
-    public ConsultationEntity addConsultation( String symptom, String secondarySymptoms, ConnectionEntity connection, LocalDateTime dateTime){
+    public ConsultationEntity addConsultation( String symptom, String secondarySymptoms, ConnectionEntity connection){
         ConsultationEntity newConsultation = new ConsultationEntity();
         newConsultation.setConnectionId(connection);
-        newConsultation.setAppointmentDateAndTime(dateTime);
+        newConsultation.setAppointmentDateAndTime(LocalDateTime.now());
         newConsultation.setMainSymptom(symptom);
         newConsultation.setSecondarySymptom(secondarySymptoms);
         return consultationRepo.save(newConsultation);

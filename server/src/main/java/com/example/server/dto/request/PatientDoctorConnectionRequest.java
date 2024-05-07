@@ -16,7 +16,4 @@ public class PatientDoctorConnectionRequest {
 
     @JsonProperty("secondarySymptom")
     private String secondarySymptom;
-
-    @JsonProperty("appointmentTimeDate")
-    private LocalDateTime appointmentTimeDate;
 }

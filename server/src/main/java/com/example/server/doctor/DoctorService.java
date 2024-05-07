@@ -203,6 +203,7 @@ public class DoctorService {
 
     public DoctorEntity updatePassword(String email, String password) {
         DoctorEntity doctor = doctorRepository.findDoctorEntitiesByEmail(email);
+        doctor.setFirstTimeLogin(true);
         doctor.setPassword(bCryptPasswordEncoder.encode(password));
         return doctorRepository.save(doctor);
     }

@@ -8,9 +8,12 @@ import com.example.server.hospitalSpecialization.HospitalSpecializationEntity;
 import com.example.server.patient.PatientController;
 import com.example.server.patient.PatientEntity;
 import com.example.server.patient.PatientService;
+import lombok.Data;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,6 +40,7 @@ public class ConnectionService {
         ConnectionEntity newConnection = new ConnectionEntity();
         newConnection.setDoctor(doctor);
         newConnection.setPatient(patient);
+        newConnection.setCreatedAt(LocalDate.now());
         return connectionRepo.save(newConnection);
     }
 

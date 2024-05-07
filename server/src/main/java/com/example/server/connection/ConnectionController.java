@@ -65,8 +65,7 @@ public class ConnectionController {
         ConsultationEntity consultationEntity = consultation.addConsultation(
                 patientDoctorConnection.getMainSymptom(),
                 patientDoctorConnection.getSecondarySymptom(),
-                connectionEntity,
-                patientDoctorConnection.getAppointmentTimeDate()
+                connectionEntity
                 );
         if(consultationEntity==null){
             throw new PatientController.UnexpectedErrorException();
