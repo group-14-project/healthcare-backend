@@ -284,7 +284,7 @@ public class SignalingController {
         }
 //
         List<String> queue = map.get(doctorId);
-//        queue.remove(0);
+        queue.remove(0);
 
         System.out.println("disconnect call jsonObject: "+jsonObject);
 //
@@ -297,8 +297,6 @@ public class SignalingController {
         if(queue!=null && !queue.isEmpty()){
             currentCall = queue.get(0);
             simpMessagingTemplate.convertAndSendToUser(doctorId,"/topic/call",currentCall);
-//            doctorService.changeStatusToInACall(doctorId);
-//            doctorStatusScheduler.sendDoctorStatusUpdate();
         }
 
     }
