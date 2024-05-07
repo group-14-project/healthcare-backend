@@ -254,7 +254,7 @@ public class SignalingController {
         JSONObject jsonObject = new JSONObject(call);
         JSONObject jsonObjectTo = new JSONObject(jsonObject.getString("initiatedBy"));
         JSONObject jsonObjectFrom = new JSONObject(jsonObject.getString("acceptedBy"));
-        String doctorId = jsonObjectTo.getString("remoteId");
+        String doctorId = jsonObjectFrom.getString("callee");
 
 //        System.out.println(jsonObject.get("acceptedBy"));
 //        System.out.println(jsonObject.get("initiatedBy"));
