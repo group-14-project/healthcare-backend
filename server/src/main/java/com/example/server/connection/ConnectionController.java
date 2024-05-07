@@ -5,6 +5,7 @@ import com.example.server.consultation.ConsultationService;
 import com.example.server.doctor.DoctorEntity;
 import com.example.server.doctor.DoctorService;
 import com.example.server.dto.request.PatientDoctorConnectionRequest;
+import com.example.server.dto.response.AppointmentDetailsDto;
 import com.example.server.errorOrSuccessMessageResponse.ErrorMessage;
 import com.example.server.hospital.HospitalEntity;
 import com.example.server.jwtToken.JWTService;
@@ -70,6 +71,17 @@ public class ConnectionController {
         if(consultationEntity==null){
             throw new PatientController.UnexpectedErrorException();
         }
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        AppointmentDetailsDto response = new AppointmentDetailsDto();
+        response.setRecordingLink(consultationEntity.getRecordingLink());
+        response.setMainSymptom(consultationEntity.getMainSymptom());
+        response.setPatientEmail(patientEntity.getEmail());
+        response.setPrescription(consultationEntity.getPrescription());
+        response.setDoctorEmail(doctorEntity.getEmail());
+        response.setAppointmentDateAndTime(consultationEntity.getAppointmentDateAndTime());
+        response.setPatientFirstName(patientEntity.getFirstName());
+        response.setPatientLastName(patientEntity.getLastName());
+        response.setDoctorFirstName(doctorEntity.getFirstName());
+        response.setDoctorLastName(doctorEntity.getLastName());
+        return ResponseEntity.ok().body(response);
     }
 }

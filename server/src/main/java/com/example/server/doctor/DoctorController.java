@@ -185,7 +185,9 @@ public class DoctorController {
 
     @GetMapping("/viewHospitalsAndDoctors")
     public ResponseEntity<?> getHospitalsDoctors(HttpServletRequest request) throws IOException {
+        System.out.println("Errror 1");
         DoctorEntity mainDoctor = jwtTokenReCheck.checkJWTAndSessionDoctor(request);
+        System.out.println("Errror 2");
         if(mainDoctor==null){
             doctorStatusScheduler.sendDoctorStatusUpdate();
             ErrorMessage errorMessage = new ErrorMessage();
@@ -264,15 +266,19 @@ public class DoctorController {
 
     @PutMapping("/updatePassword")
     ResponseEntity<?> updatePassword(@RequestBody PasswordUpdateRequest body, HttpServletRequest request) throws IOException {
+        System.out.println("Errror 1");
         DoctorEntity doctorEntity = jwtTokenReCheck.checkJWTAndSessionDoctor(request);
+        System.out.println("Errror 2");
         if(doctorEntity==null){
             doctorStatusScheduler.sendDoctorStatusUpdate();
             ErrorMessage errorMessage = new ErrorMessage();
             errorMessage.setErrorMessage("Your Session has expired. Please Login again");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
         }
+        System.out.println("Errror 3");
         DoctorEntity newDoctor = doctor.updatePassword(doctorEntity.getEmail(), body.getPassword());
 
+        System.out.println("Errror 4");
         List<ConnectionEntity> connectionEntities=connection.findAllConnectionsByDoctor(newDoctor);
         List<AppointmentDetailsDto> pastAppointmentDetails = consultation.findPastAppointments(connectionEntities);
         List<AppointmentDetailsDto> futureAppointmentDetails = consultation.findFutureAppointments(connectionEntities);
