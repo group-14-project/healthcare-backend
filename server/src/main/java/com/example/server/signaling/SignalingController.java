@@ -221,6 +221,20 @@ public class SignalingController {
         simpMessagingTemplate.convertAndSendToUser(jsonObject.getString("toUser"),"/topic/seniorJoin",msg);
         System.out.println("notification Sent");
     }
+
+    @MessageMapping("/leave")
+    public void leave(String msg){
+//        System.out.println("Answer came");
+//        System.out.println(answer);
+        JSONObject jsonObject = new JSONObject(msg);
+//        System.out.println(jsonObject.get("toUser"));
+//        System.out.println(jsonObject.get("fromUser"));
+//        System.out.println(jsonObject.get("answer"));
+        simpMessagingTemplate.convertAndSendToUser(jsonObject.getString("toUser"),"/topic/leave",msg);
+//        System.out.println("notification Sent");
+    }
+
+
     @MessageMapping("/seniorCandidate")
     public void SeniorCandidate(String candidate){
 //        System.out.println("Candidate came");
@@ -295,6 +309,7 @@ public class SignalingController {
 
     @GetMapping("/getCallDetails")
     public ResponseEntity<?> getCallDetails(HttpServletRequest request ) {
+        System.out.println("hi");
         DoctorEntity doctorEntity = jwtTokenReCheck.checkJWTAndSessionSeniorDoctor(request);
         if (doctorEntity == null) {
             ErrorMessage errorMessage = new ErrorMessage();
