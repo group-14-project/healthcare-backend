@@ -18,4 +18,7 @@ public interface ReportRepository extends JpaRepository<ReportEntity,Integer> {
     List<ReportEntity> findAllByConnectionsInOrConnectionsIsNull(List<ConnectionEntity> connectionEntities);
 
      List<ReportEntity> findByPatId(Integer patientId);
+
+    @Query("select c from ReportEntity c where c.con =:connectionEntity")
+    List<ReportEntity> findAllByConnectionNotNull(ConnectionEntity connectionEntity);
 }
