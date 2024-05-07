@@ -44,8 +44,10 @@ public class ReportService {
             response.setReportName(reportEntity.getReportName());
             response.setId(reportEntity.getId());
             response.setLocalDateTime(reportEntity.getDateTime());
-            response.setDoctorFirstName(reportEntity.getCon().getDoctor().getFirstName());
-            response.setDoctorLastName(reportEntity.getCon().getDoctor().getLastName());
+            if (reportEntity.getCon() != null) {
+                response.setDoctorFirstName(reportEntity.getCon().getDoctor().getFirstName());
+                response.setDoctorLastName(reportEntity.getCon().getDoctor().getLastName());
+            }
             reportDetailsResponses.add(response);
 
         }
