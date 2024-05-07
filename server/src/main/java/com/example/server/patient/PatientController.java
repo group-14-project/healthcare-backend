@@ -99,7 +99,7 @@ public class   PatientController {
         if(newPatient==null)
         {
             ErrorMessage errorMessage = new ErrorMessage();
-            errorMessage.setErrorMessage("Wrong OTP or email ID");
+            errorMessage.setErrorMessage("You dont have an account, please sign up");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
         }
         newPatient.setDeleteEntry(false);

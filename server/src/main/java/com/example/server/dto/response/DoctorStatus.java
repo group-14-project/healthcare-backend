@@ -14,6 +14,7 @@ public class DoctorStatus {
     private String lastName;
     private String degree;
     private String hospitalName;
+    private String specialization;
 
 //    public String toJsonString() throws IOException {
 //        ObjectMapper mapper = new ObjectMapper();

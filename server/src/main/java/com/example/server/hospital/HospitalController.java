@@ -18,6 +18,7 @@ import com.example.server.patient.PatientService;
 import com.example.server.reviews.ReviewService;
 import com.example.server.specialization.SpecializationEntity;
 import com.example.server.specialization.SpecializationService;
+import com.example.server.webSocket.DoctorStatusScheduler;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -43,7 +45,8 @@ public class HospitalController
     private final JWTTokenReCheck jwtTokenReCheck;
     private final ReviewService review;
     private final ConsultationService consultation;
-    public HospitalController(HospitalService hospitalService, HospitalSpecializationService hospitalSpecialization, DoctorService doctorService, EmailSender emailSender, ConnectionService connection, SpecializationService specializationService, DoctorRepository doctorRepository, JWTService jwtService, JWTTokenReCheck jwtTokenReCheck, ReviewService review, ConsultationService consultation)
+    private final DoctorStatusScheduler doctorStatusScheduler;
+    public HospitalController(HospitalService hospitalService, HospitalSpecializationService hospitalSpecialization, DoctorService doctorService, EmailSender emailSender, ConnectionService connection, SpecializationService specializationService, DoctorRepository doctorRepository, JWTService jwtService, JWTTokenReCheck jwtTokenReCheck, ReviewService review, ConsultationService consultation, DoctorStatusScheduler doctorStatusScheduler)
     {
         this.hospital = hospitalService;
         this.hospitalSpecialization = hospitalSpecialization;
@@ -56,6 +59,7 @@ public class HospitalController
         this.jwtTokenReCheck = jwtTokenReCheck;
         this.review = review;
         this.consultation = consultation;
+        this.doctorStatusScheduler = doctorStatusScheduler;
     }
 
     //JWT Token done
@@ -142,7 +146,7 @@ public class HospitalController
     }
 
     @PostMapping("/addDoctor")
-    ResponseEntity<?> addDoctor(@RequestBody DoctorDto doctor, HttpServletRequest request){
+    ResponseEntity<?> addDoctor(@RequestBody DoctorDto doctor, HttpServletRequest request) throws IOException {
         HospitalEntity hospitalEntity = jwtTokenReCheck.checkJWTAndSessionHospital(request);
         if(hospitalEntity==null){
             ErrorMessage errorMessage = new ErrorMessage();
@@ -158,6 +162,7 @@ public class HospitalController
         DoctorEntity doc=doctorService.registerNewDoctor(doctor.getFirstName(),doctor.getLastName(),doctor.getDoctorEmail(),doctor.getRegistrationId(), doctor.getDegree(), doctor.getPhoneNumber());
         doc.setHospitalSpecialization(hsc);
         doctorRepository.save(doc);
+        doctorStatusScheduler.sendDoctorStatusUpdate();
 
         SuccessMessage successMessage = new SuccessMessage();
         successMessage.setSuccessMessage("Doctor has been registered successfully");
@@ -165,7 +170,7 @@ public class HospitalController
     }
 
     @PostMapping("/addSpecialization")
-    ResponseEntity<?>  registerNewSpecialization(@RequestBody AddSpecializationRequest body, HttpServletRequest request) {
+    ResponseEntity<?>  registerNewSpecialization(@RequestBody AddSpecializationRequest body, HttpServletRequest request) throws IOException {
         HospitalEntity hospitalEntity = jwtTokenReCheck.checkJWTAndSessionHospital(request);
         if(hospitalEntity==null){
             ErrorMessage errorMessage = new ErrorMessage();
@@ -217,6 +222,7 @@ public class HospitalController
         newDoctor.setSenior(true);
         doctorService.addDoctor(newDoctor);
 
+        doctorStatusScheduler.sendDoctorStatusUpdate();
         SuccessMessage successMessage = new SuccessMessage();
         successMessage.setSuccessMessage("Department has been registered successfully");
         return ResponseEntity.ok(successMessage);

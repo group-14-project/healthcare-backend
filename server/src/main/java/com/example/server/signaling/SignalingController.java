@@ -138,8 +138,8 @@ public class SignalingController {
 
         if(currentCall.equals(call)){
             System.out.println("equals");
-            doctorService.changeStatusToInACall(doctorId);
-            doctorStatusScheduler.sendDoctorStatusUpdate();
+//            doctorService.changeStatusToInACall(doctorId);
+//            doctorStatusScheduler.sendDoctorStatusUpdate();
             simpMessagingTemplate.convertAndSendToUser(doctorId,"/topic/call",call);
         }
         else{

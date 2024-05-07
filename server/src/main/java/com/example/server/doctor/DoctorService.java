@@ -100,6 +100,7 @@ public class DoctorService {
         String randomPassword = passwordUtil.generateRandomPassword();
         newDoctor.setPassword(bCryptPasswordEncoder.encode(randomPassword));
         newDoctor.setFirstTimeLogin(false);
+        newDoctor.setActiveStatus(0);
         newDoctor.setRole("ROLE_doctor");
 
         doctorRepository.save(newDoctor);
@@ -188,7 +189,10 @@ public class DoctorService {
         doctorStatus.setHospitalName(doctorEntity.getHospitalSpecialization().getHospital().getHospitalName());
         doctorStatus.setFirstName(doctorEntity.getFirstName());
         doctorStatus.setLastName(doctorEntity.getLastName());
-        doctorStatus.setStatus(doctorEntity.getActiveStatus() == 1 ? "Active" : "Inactive");
+        doctorStatus.setSpecialization(doctorEntity.getHospitalSpecialization().getSpecialization().getName());
+        doctorStatus.setStatus(doctorEntity.getActiveStatus() == 0 ? "offline" :
+                (doctorEntity.getActiveStatus() == 1 ? "active" :
+                        (doctorEntity.getActiveStatus() == 2 ? "busy" : "on Call")));
         return doctorStatus;
     }
 
@@ -334,10 +338,9 @@ public class DoctorService {
         return callDetailsToSeniorDrList;
     }
 
-
-
-
-
-
-
+    public void loginStatusChange(DoctorEntity newDoctor) {
+        DoctorEntity doctor = doctorRepository.findDoctorEntitiesByEmail(newDoctor.getEmail());
+        doctor.setActiveStatus(2);
+        doctorRepository.save(doctor);
+    }
 }

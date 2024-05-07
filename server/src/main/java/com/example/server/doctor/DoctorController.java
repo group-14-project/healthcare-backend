@@ -84,7 +84,7 @@ public class DoctorController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
         }
 
-        doctor.changeStatus(newDoctor);
+        doctor.loginStatusChange(newDoctor);
 
         List<ConnectionEntity> connectionEntities=connection.findAllConnectionsByDoctor(newDoctor);
         List<AppointmentDetailsDto> pastAppointmentDetails = consultation.findPastAppointments(connectionEntities);
@@ -293,15 +293,9 @@ public class DoctorController {
         doctorLoginResponse.setTotalPatients(patientCount);
 
         doctorStatusScheduler.sendDoctorStatusUpdate();
-
-        String jwtToken = jwtService.createJwt(newDoctor.getEmail(), newDoctor.getRole());
-        doctor.setJwtToken(jwtToken, newDoctor.getEmail());
         doctor.setLastAccessTime(newDoctor.getEmail());
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(jwtToken);
-
-        return ResponseEntity.ok().headers(headers).body(doctorLoginResponse);
+        return ResponseEntity.ok().body(doctorLoginResponse);
     }
 
     @GetMapping("/patientsLastAppointment")
