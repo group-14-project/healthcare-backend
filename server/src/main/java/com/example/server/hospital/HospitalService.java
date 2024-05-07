@@ -57,7 +57,7 @@ public class HospitalService {
 
     private HospitalEntity checkAccessTime(String email) {
         HospitalEntity hospitalEntity = hospitalRepository.findByEmail(email);
-        if (hospitalEntity.getLastAccessTime().plusHours(2).isBefore(LocalDateTime.now())) {
+        if (hospitalEntity.getLastAccessTime().plusHours(3).isBefore(LocalDateTime.now())) {
             return null;
         }
         return hospitalEntity;

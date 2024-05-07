@@ -396,7 +396,7 @@ public class DoctorController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
         }
         ReportEntity reportEntity = report.findReportById(id);
-        if(reportEntity==null || !Objects.equals(reportEntity.getCon().getDoctor().getEmail(), doctorEntity.getEmail())){
+        if(reportEntity==null || (reportEntity.getCon()!=null && !Objects.equals(reportEntity.getCon().getDoctor().getEmail(), doctorEntity.getEmail()))){
             ErrorMessage errorMessage = new ErrorMessage();
             errorMessage.setErrorMessage("You are not allowed to access this report");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);

@@ -245,6 +245,7 @@ public class DoctorService {
     public void makeDoctorOffline(String email){
         DoctorEntity doctor = doctorRepository.findDoctorEntitiesByEmail(email);
         doctor.setActiveStatus(0);
+        doctorRepository.save(doctor);
     }
 
     public void expireJWTfromTable(String email){

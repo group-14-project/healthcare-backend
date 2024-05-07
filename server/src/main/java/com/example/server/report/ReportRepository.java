@@ -10,7 +10,7 @@ public interface ReportRepository extends JpaRepository<ReportEntity,Integer> {
     @Query("select c from ReportEntity c where c.id =:id")
     ReportEntity findByReportId(Integer id);
 
-    @Query("select c from ReportEntity c where c.con =:connectionEntity")
+    @Query("select c from ReportEntity c where c.con =:connectionEntity OR c.con IS NULL")
     List<ReportEntity> findAllByConnection(ConnectionEntity connectionEntity);
 
 
