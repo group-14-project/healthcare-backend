@@ -21,13 +21,10 @@ public class DoctorEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
     @NonNull
     private String firstName;
-
     @NonNull
     private String lastName;
-
     @NonNull
     private String email;
     private String password;
