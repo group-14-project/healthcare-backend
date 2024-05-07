@@ -404,10 +404,12 @@ public class DoctorController {
         String bucketName = "adityavit36";
         val encryptedBody = awsServiceImplementation.downloadFile(bucketName,reportEntity.getFileName()); // Decrypt the file content
         byte[] decryptedBytes = encryptFile.decryptFile(encryptedBody.toByteArray());
+//        patient.setLastAccessTime(doctorEntity.getEmail());
         HttpHeaders headers = new HttpHeaders();
         headers.setContentDispositionFormData("attachment", reportEntity.getFileName());
         headers.setContentType(FileTypeEnum.fromFilename(reportEntity.getFileName()));
         doctor.setLastAccessTime(doctorEntity.getEmail());
+//        patient.setLastAccessTime(doctorEntity.getEmail());
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(decryptedBytes);
@@ -476,7 +478,7 @@ public class DoctorController {
             errorMessage.setErrorMessage("You dont have access to this patient");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
         }
-        List<ReportDetailsResponse> reportDetailsResponses = report.findAllReportsByConnectionRecommended(connectionEntity);
+        List<ReportDetailsResponse> reportDetailsResponses = report.findAllReportsByConnection(connectionEntity);
         doctor.setLastAccessTime(doctorEntity.getEmail());
         return ResponseEntity.ok(reportDetailsResponses);
     }
@@ -506,11 +508,13 @@ public class DoctorController {
         String bucketName = "adityavit36";
         val encryptedBody = awsServiceImplementation.downloadFile(bucketName,reportEntity.getFileName()); // Decrypt the file content
         byte[] decryptedBytes = encryptFile.decryptFile(encryptedBody.toByteArray());
+//        patient.setLastAccessTime(doctorEntity.getEmail());
         HttpHeaders headers = new HttpHeaders();
         headers.setContentDispositionFormData("attachment", reportEntity.getFileName());
         headers.setContentType(FileTypeEnum.fromFilename(reportEntity.getFileName()));
 
         doctor.setLastAccessTime(doctorEntity.getEmail());
+//        patient.setLastAccessTime(doctorEntity.getEmail());
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(decryptedBytes);
