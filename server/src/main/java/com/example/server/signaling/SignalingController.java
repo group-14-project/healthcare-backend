@@ -284,7 +284,7 @@ public class SignalingController {
         }
 //
         List<String> queue = map.get(doctorId);
-        queue.remove(0);
+//        queue.remove(0);
 
         System.out.println("disconnect call jsonObject: "+jsonObject);
 //
